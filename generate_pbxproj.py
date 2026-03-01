@@ -491,6 +491,7 @@ w(f"\t\t}};")
 app_settings = [
     "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;",
     "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;",
+    "INFOPLIST_KEY_CFBundleIconName = AppIcon;",
     "CODE_SIGN_STYLE = Automatic;",
     "CURRENT_PROJECT_VERSION = 1;",
     'DEVELOPMENT_ASSET_PATHS = "\\"TsugiIchi/App/Preview Content\\"";',
