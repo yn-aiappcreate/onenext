@@ -22,6 +22,34 @@ struct ReviewTab: View {
             .sorted { $0.sortOrder < $1.sortOrder }
     }
 
+    /// 今週の完了Step数
+    private var weekDoneCount: Int {
+        weekStepsAll.filter { $0.status == .done }.count
+    }
+
+    /// 今週の延期Step数
+    private var weekPostponedCount: Int {
+        weekStepsAll.filter { $0.status == .postponed }.count
+    }
+
+    /// 今週の破棄Step数
+    private var weekDiscardedCount: Int {
+        weekStepsAll.filter { $0.status == .discarded }.count
+    }
+
+    /// 今週の全Step（スロットに紐づくもの全て）
+    private var weekStepsAll: [Step] {
+        allSlots.filter { $0.weekId == currentWeekId }.compactMap { $0.step }
+    }
+
+    /// 延期済みのStep（再スケジュール候補）
+    private var postponedSteps: [Step] {
+        allGoals
+            .flatMap { $0.steps }
+            .filter { $0.status == .postponed }
+            .sorted { $0.sortOrder < $1.sortOrder }
+    }
+
     /// Backlogのアクティブなgoal（Stepあり）
     private var activeGoalsWithSteps: [Goal] {
         allGoals
@@ -42,6 +70,20 @@ struct ReviewTab: View {
     var body: some View {
         NavigationStack {
             List {
+                // MARK: - Section 0: 今週のサマリー
+                if !weekStepsAll.isEmpty {
+                    Section("今週のサマリー") {
+                        HStack {
+                            SummaryBadge(count: weekDoneCount, label: "完了", color: .green, icon: "checkmark.circle.fill")
+                            Spacer()
+                            SummaryBadge(count: weekPostponedCount, label: "延期", color: .orange, icon: "arrow.uturn.right.circle")
+                            Spacer()
+                            SummaryBadge(count: weekDiscardedCount, label: "破棄", color: .red, icon: "xmark.circle")
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+
                 // MARK: - Section 1: 未完了の予定Step
                 Section {
                     if unfinishedScheduledSteps.isEmpty {
@@ -71,6 +113,49 @@ struct ReviewTab: View {
                         Spacer()
                         if !unfinishedScheduledSteps.isEmpty {
                             Text("\(unfinishedScheduledSteps.count)件")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                // MARK: - Section 1.5: 延期済みStepの再スケジュール
+                if !postponedSteps.isEmpty {
+                    Section {
+                        ForEach(postponedSteps) { step in
+                            HStack(spacing: 12) {
+                                Image(systemName: "arrow.uturn.right.circle")
+                                    .foregroundStyle(.orange)
+                                    .frame(width: 20)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(step.title)
+                                        .font(.body)
+                                    if let goalTitle = step.goal?.title {
+                                        Text(goalTitle)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+
+                                Spacer()
+
+                                Button {
+                                    rescheduleStep(step)
+                                } label: {
+                                    Label("再配置", systemImage: "calendar.badge.plus")
+                                        .font(.caption)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .disabled(currentWeekSlotCount >= Constants.maxWeeklySlots)
+                            }
+                        }
+                    } header: {
+                        HStack {
+                            Text("延期中のStep")
+                            Spacer()
+                            Text("\(postponedSteps.count)件")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -226,6 +311,27 @@ struct ReviewTab: View {
     /// ステップのステータスを変更
     private func markStep(_ step: Step, as newStatus: StepStatus) {
         step.status = newStatus
+        checkGoalCompletion(for: step)
+    }
+
+    /// 延期Stepを今週枠に再配置
+    private func rescheduleStep(_ step: Step) {
+        let weekId = currentWeekId
+        let nextIndex = allSlots.filter { $0.weekId == weekId }.count
+        let slot = PlanSlot(weekId: weekId, index: nextIndex, step: step)
+        modelContext.insert(slot)
+        step.status = .scheduled
+        step.scheduledAt = Date()
+    }
+
+    /// 全Step完了時にGoalを自動完了
+    private func checkGoalCompletion(for step: Step) {
+        guard let goal = step.goal, !goal.steps.isEmpty else { return }
+        let allDone = goal.steps.allSatisfy { $0.status == .done || $0.status == .discarded }
+        let hasAtLeastOneDone = goal.steps.contains { $0.status == .done }
+        if allDone && hasAtLeastOneDone && goal.status != .completed {
+            goal.status = .completed
+        }
     }
 
     /// レビューを完了してReviewLogを記録
@@ -360,6 +466,30 @@ struct GoalPickerSheet: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - SummaryBadge
+
+private struct SummaryBadge: View {
+    let count: Int
+    let label: String
+    let color: Color
+    let icon: String
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(color)
+            Text("\(count)")
+                .font(.title3)
+                .fontWeight(.bold)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

@@ -12,9 +12,13 @@ enum NotificationManager {
         ) { _, _ in }
     }
 
-    /// Schedule a weekly review reminder every Sunday at 20:00 (local time).
+    /// Schedule a weekly review reminder at the specified day/time (local time).
     /// Replaces any existing reminder so it's safe to call repeatedly.
-    static func scheduleWeeklyReview() {
+    /// - Parameters:
+    ///   - weekday: 1=Sunday, 2=Monday, ..., 7=Saturday (default: 1)
+    ///   - hour: 0-23 (default: 20)
+    ///   - minute: 0-59 (default: 0)
+    static func scheduleWeeklyReview(weekday: Int = 1, hour: Int = 20, minute: Int = 0) {
         let center = UNUserNotificationCenter.current()
 
         // Remove previous to avoid duplicates
@@ -27,11 +31,10 @@ enum NotificationManager {
         content.body = "今週のStepを振り返り、来週のプランを立てましょう"
         content.sound = .default
 
-        // Every Sunday at 20:00 local
         var dateComponents = DateComponents()
-        dateComponents.weekday = 1  // Sunday
-        dateComponents.hour = 20
-        dateComponents.minute = 0
+        dateComponents.weekday = weekday
+        dateComponents.hour = hour
+        dateComponents.minute = minute
 
         let trigger = UNCalendarNotificationTrigger(
             dateMatching: dateComponents,

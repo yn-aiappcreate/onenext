@@ -13,7 +13,8 @@ for key in [
     "fr_backlog_tab", "fr_goal_form", "fr_goal_detail",
     "fr_plan_tab", "fr_review_tab", "fr_settings_tab",
     "fr_empty_state",
-    "fr_template_engine", "fr_notification_manager", "fr_date_helper", "fr_constants",
+    "fr_template_engine", "fr_notification_manager", "fr_csv_exporter", "fr_date_helper", "fr_constants",
+    "fr_onboarding_view",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
 ]:
@@ -26,7 +27,8 @@ for key in [
     "bf_backlog_tab", "bf_goal_form", "bf_goal_detail",
     "bf_plan_tab", "bf_review_tab", "bf_settings_tab",
     "bf_empty_state",
-    "bf_template_engine", "bf_notification_manager", "bf_date_helper", "bf_constants",
+    "bf_template_engine", "bf_notification_manager", "bf_csv_exporter", "bf_date_helper", "bf_constants",
+    "bf_onboarding_view",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
     ids[key] = make_id(key)
@@ -36,6 +38,7 @@ for key in [
     "gr_main", "gr_onenext", "gr_app", "gr_models", "gr_views",
     "gr_backlog", "gr_plan", "gr_review", "gr_settings", "gr_components",
     "gr_services", "gr_utilities", "gr_preview", "gr_tests", "gr_products",
+    "gr_onboarding",
     "tg_app", "tg_tests",
     "bp_app_sources", "bp_app_frameworks", "bp_app_resources",
     "bp_tests_sources", "bp_tests_frameworks", "bp_tests_resources",
@@ -63,9 +66,11 @@ bf_to_fr = {
     "bf_settings_tab": ("fr_settings_tab", "SettingsTab.swift"),
     "bf_template_engine": ("fr_template_engine", "TemplateEngine.swift"),
     "bf_notification_manager": ("fr_notification_manager", "NotificationManager.swift"),
+    "bf_csv_exporter": ("fr_csv_exporter", "CSVExporter.swift"),
     "bf_date_helper": ("fr_date_helper", "DateHelper.swift"),
     "bf_constants": ("fr_constants", "Constants.swift"),
     "bf_empty_state": ("fr_empty_state", "EmptyStateView.swift"),
+    "bf_onboarding_view": ("fr_onboarding_view", "OnboardingView.swift"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
     "bf_datehelper_tests": ("fr_datehelper_tests", "DateHelperTests.swift"),
@@ -75,8 +80,9 @@ app_sources = [
     "bf_app_swift", "bf_content_view", "bf_goal", "bf_step", "bf_planslot",
     "bf_reviewlog", "bf_backlog_tab", "bf_goal_form", "bf_goal_detail",
     "bf_plan_tab", "bf_review_tab",
-    "bf_settings_tab", "bf_template_engine", "bf_notification_manager", "bf_date_helper", "bf_constants",
-    "bf_empty_state",
+    "bf_settings_tab", "bf_template_engine", "bf_notification_manager", "bf_csv_exporter",
+    "bf_date_helper", "bf_constants",
+    "bf_empty_state", "bf_onboarding_view",
 ]
 app_resources = ["bf_assets"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
@@ -137,6 +143,8 @@ fr_info = [
     ("fr_settings_tab", "lastKnownFileType = sourcecode.swift", "SettingsTab.swift", '"<group>"'),
     ("fr_template_engine", "lastKnownFileType = sourcecode.swift", "TemplateEngine.swift", '"<group>"'),
     ("fr_notification_manager", "lastKnownFileType = sourcecode.swift", "NotificationManager.swift", '"<group>"'),
+    ("fr_csv_exporter", "lastKnownFileType = sourcecode.swift", "CSVExporter.swift", '"<group>"'),
+    ("fr_onboarding_view", "lastKnownFileType = sourcecode.swift", "OnboardingView.swift", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
     ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
@@ -224,6 +232,7 @@ write_group("gr_views", "Views", [
     ("gr_review", "Review"),
     ("gr_settings", "Settings"),
     ("gr_components", "Components"),
+    ("gr_onboarding", "Onboarding"),
 ], path="Views")
 
 write_group("gr_backlog", "Backlog", [
@@ -243,9 +252,14 @@ for grp, fr, fname, path in [
 ]:
     write_group(grp, path, [(fr, fname)], path=path)
 
+write_group("gr_onboarding", "Onboarding", [
+    ("fr_onboarding_view", "OnboardingView.swift"),
+], path="Onboarding")
+
 write_group("gr_services", "Services", [
     ("fr_template_engine", "TemplateEngine.swift"),
     ("fr_notification_manager", "NotificationManager.swift"),
+    ("fr_csv_exporter", "CSVExporter.swift"),
 ], path="Services")
 
 write_group("gr_utilities", "Utilities", [

@@ -8,6 +8,20 @@ struct GoalDetailView: View {
     @State private var showEditSheet = false
     @State private var showTemplatePicker = false
     @State private var showRegenerateConfirm = false
+    @State private var showAddStepSheet = false
+
+    private var doneCount: Int {
+        goal.steps.filter { $0.status == .done }.count
+    }
+
+    private var totalCount: Int {
+        goal.steps.count
+    }
+
+    private var progress: Double {
+        guard totalCount > 0 else { return 0 }
+        return Double(doneCount) / Double(totalCount)
+    }
 
     var body: some View {
         List {
@@ -38,6 +52,34 @@ struct GoalDetailView: View {
                 }
             }
 
+            // MARK: - 進捗
+            if !goal.steps.isEmpty {
+                Section("進捗") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("\(doneCount)/\(totalCount) 完了")
+                                .font(.headline)
+                            Spacer()
+                            Text("\(Int(progress * 100))%")
+                                .font(.headline)
+                                .foregroundStyle(progress >= 1.0 ? .green : .primary)
+                        }
+                        ProgressView(value: progress)
+                            .tint(progress >= 1.0 ? .green : Color.accentColor)
+                    }
+
+                    if goal.status == .completed {
+                        HStack {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundStyle(.green)
+                            Text("Goal達成！")
+                                .foregroundStyle(.green)
+                                .fontWeight(.semibold)
+                        }
+                    }
+                }
+            }
+
             Section {
                 if goal.steps.isEmpty {
                     if goal.category != nil {
@@ -61,7 +103,7 @@ struct GoalDetailView: View {
                     }
                 } else {
                     ForEach(sortedSteps) { step in
-                        StepRow(step: step)
+                        StepRow(step: step, onStatusChange: { checkGoalCompletion() })
                     }
 
                     if goal.category != nil {
@@ -72,6 +114,12 @@ struct GoalDetailView: View {
                                 .foregroundStyle(.red)
                         }
                     }
+                }
+
+                Button {
+                    showAddStepSheet = true
+                } label: {
+                    Label("Stepを手動追加", systemImage: "plus.circle")
                 }
             } header: {
                 HStack {
@@ -117,6 +165,9 @@ struct GoalDetailView: View {
         } message: {
             Text("既存の\(goal.steps.count)件のStepは削除され、テンプレートから新しいStepが生成されます。")
         }
+        .sheet(isPresented: $showAddStepSheet) {
+            ManualStepSheet(goal: goal)
+        }
     }
 
     private var sortedSteps: [Step] {
@@ -133,6 +184,16 @@ struct GoalDetailView: View {
         // Generate new steps
         TemplateEngine.generateSteps(for: goal, category: category)
     }
+
+    /// 全Step完了時にGoalを自動完了
+    private func checkGoalCompletion() {
+        guard !goal.steps.isEmpty else { return }
+        let allDone = goal.steps.allSatisfy { $0.status == .done || $0.status == .discarded }
+        let hasAtLeastOneDone = goal.steps.contains { $0.status == .done }
+        if allDone && hasAtLeastOneDone && goal.status != .completed {
+            goal.status = .completed
+        }
+    }
 }
 
 // MARK: - StepRow
@@ -140,6 +201,7 @@ struct GoalDetailView: View {
 private struct StepRow: View {
     @Environment(\.modelContext) private var modelContext
     let step: Step
+    var onStatusChange: (() -> Void)?
     @Query private var allSlots: [PlanSlot]
 
     private var isScheduled: Bool {
@@ -206,6 +268,15 @@ private struct StepRow: View {
                         .foregroundStyle(.orange)
                 }
                 .buttonStyle(.plain)
+            } else if step.status == .done {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            } else if step.status == .postponed {
+                Image(systemName: "arrow.uturn.right.circle")
+                    .foregroundStyle(.orange)
+            } else if step.status == .discarded {
+                Image(systemName: "xmark.circle")
+                    .foregroundStyle(.red)
             }
         }
     }
@@ -217,6 +288,7 @@ private struct StepRow: View {
         modelContext.insert(slot)
         step.status = .scheduled
         step.scheduledAt = Date()
+        onStatusChange?()
     }
 
     private func removeFromPlan() {
@@ -226,6 +298,7 @@ private struct StepRow: View {
         }
         step.status = .pending
         step.scheduledAt = nil
+        onStatusChange?()
     }
 
     private var statusIcon: String {
@@ -246,6 +319,59 @@ private struct StepRow: View {
         case .discarded: .red
         case .pending: .secondary
         }
+    }
+}
+
+// MARK: - ManualStepSheet
+
+struct ManualStepSheet: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    let goal: Goal
+
+    @State private var title: String = ""
+    @State private var durationMin: Int = Constants.defaultStepDurationMin
+
+    private var isValid: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Step名") {
+                    TextField("やること", text: $title)
+                }
+
+                Section("所要時間（分）") {
+                    Stepper("\(durationMin)分", value: $durationMin, in: 5...240, step: 5)
+                }
+            }
+            .navigationTitle("Stepを追加")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("追加") {
+                        addStep()
+                        dismiss()
+                    }
+                    .disabled(!isValid)
+                }
+            }
+        }
+    }
+
+    private func addStep() {
+        let trimmed = title.trimmingCharacters(in: .whitespaces)
+        let nextOrder = (goal.steps.map { $0.sortOrder }.max() ?? -1) + 1
+        let step = Step(
+            title: trimmed,
+            durationMin: durationMin,
+            type: .manual,
+            sortOrder: nextOrder
+        )
+        goal.steps.append(step)
     }
 }
 
