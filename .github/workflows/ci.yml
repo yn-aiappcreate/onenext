@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        run: echo "Setup step - configure as needed"
+
+      - name: Lint
+        run: echo "Lint step - configure as needed"
+
+      - name: Test
+        run: echo "Test step - configure as needed"
+
+      - name: Build
+        run: echo "Build step - configure as needed"
