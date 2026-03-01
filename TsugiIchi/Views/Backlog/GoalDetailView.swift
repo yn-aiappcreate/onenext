@@ -138,7 +138,22 @@ struct GoalDetailView: View {
 // MARK: - StepRow
 
 private struct StepRow: View {
+    @Environment(\.modelContext) private var modelContext
     let step: Step
+    @Query private var allSlots: [PlanSlot]
+
+    private var isScheduled: Bool {
+        step.status == .scheduled
+    }
+
+    private var currentWeekSlotCount: Int {
+        let weekId = DateHelper.weekId()
+        return allSlots.filter { $0.weekId == weekId }.count
+    }
+
+    private var canSchedule: Bool {
+        currentWeekSlotCount < Constants.maxWeeklySlots
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -161,15 +176,62 @@ private struct StepRow: View {
                             .padding(.vertical, 1)
                             .background(.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 3))
                     }
+                    if isScheduled {
+                        Text("今週枠")
+                            .font(.caption2)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(.blue, in: RoundedRectangle(cornerRadius: 3))
+                    }
                 }
             }
+
+            Spacer()
+
+            if step.status == .pending {
+                Button {
+                    addToPlan()
+                } label: {
+                    Image(systemName: "calendar.badge.plus")
+                        .foregroundStyle(canSchedule ? Color.accentColor : .secondary)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canSchedule)
+            } else if isScheduled {
+                Button {
+                    removeFromPlan()
+                } label: {
+                    Image(systemName: "calendar.badge.minus")
+                        .foregroundStyle(.orange)
+                }
+                .buttonStyle(.plain)
+            }
         }
+    }
+
+    private func addToPlan() {
+        let weekId = DateHelper.weekId()
+        let nextIndex = allSlots.filter { $0.weekId == weekId }.count
+        let slot = PlanSlot(weekId: weekId, index: nextIndex, step: step)
+        modelContext.insert(slot)
+        step.status = .scheduled
+        step.scheduledAt = Date()
+    }
+
+    private func removeFromPlan() {
+        let weekId = DateHelper.weekId()
+        if let slot = allSlots.first(where: { $0.weekId == weekId && $0.step?.id == step.id }) {
+            modelContext.delete(slot)
+        }
+        step.status = .pending
+        step.scheduledAt = nil
     }
 
     private var statusIcon: String {
         switch step.status {
         case .done: "checkmark.circle.fill"
-        case .scheduled: "calendar.circle"
+        case .scheduled: "calendar.circle.fill"
         case .postponed: "arrow.uturn.right.circle"
         case .discarded: "xmark.circle"
         case .pending: "circle"
