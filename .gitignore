@@ -1,0 +1,32 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserdata
+*.xcworkspace
+!*.xcodeproj/project.xcworkspace/
+xcuserdata/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+
+# CocoaPods (not used, but just in case)
+Pods/
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Generated
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# IDE
+.idea/
+*.code-workspace
+
+# Project-specific
+generate_pbxproj.py
