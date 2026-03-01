@@ -14,7 +14,7 @@ onenext/
 │   ├── pull_request_template.md
 │   └── workflows/ci.yml
 │
-├── OneNext/                       # ← Xcode Project Root
+├── TsugiIchi/                     # ← Xcode Project Root
 │   ├── TsugiIchi.xcodeproj
 │   │
 │   ├── App/
@@ -83,8 +83,8 @@ onenext/
 ```
 
 ### ポイント
-- **Xcode プロジェクト名**: `OneNext`（scheme名も `TsugiIchi`）
-- **CI の scheme**: `OneNext`（ci.yml の `-scheme DoNext` → `-scheme TsugiIchi` に修正）
+- **Xcode プロジェクト名**: `TsugiIchi`（scheme名も `TsugiIchi`）
+- **CI の scheme**: `TsugiIchi`（ci.yml の `-scheme DoNext` → `-scheme TsugiIchi` に修正）
 - **フォルダ参照**: Xcode の Group = 実ファイルシステムのフォルダ（Group with Folder を使用）
 - **外部ライブラリ**: 原則ゼロ。xcpretty は CI のみ（`brew install xcpretty` or `gem`）
 
@@ -294,7 +294,7 @@ final class ReviewLog {
 ```
 ┌─────────────────────────────────────────────┐
 │  SwiftData ModelContainer                    │
-│  (OneNextApp で生成、.modelContainer() で注入)  │
+│  (TsugiIchiApp で生成、.modelContainer() で注入) │
 └─────────────┬───────────────────────────────┘
               │ @Environment(\.modelContext)
               ▼
@@ -335,7 +335,7 @@ final class ReviewLog {
 #### M0 に含めるファイル
 
 ```
-OneNext/
+TsugiIchi/
 ├── TsugiIchi.xcodeproj              # Xcode プロジェクト（iOS 17, SwiftUI lifecycle）
 ├── App/
 │   ├── TsugiIchiApp.swift           # @main + ModelContainer 設定
