@@ -1,26 +1,17 @@
-name: CI
+name: iOS CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+  push:
+    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  build-and-test:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup
-        run: echo "Setup step - configure as needed"
-
-      - name: Lint
-        run: echo "Lint step - configure as needed"
-
-      - name: Test
-        run: echo "Test step - configure as needed"
-
-      - name: Build
-        run: echo "Build step - configure as needed"
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      - name: Build & Test
+        run: |
+          xcodebuild -scheme DoNext -destination 'platform=iOS Simulator,name=iPhone 15' test | xcpretty
