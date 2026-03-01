@@ -1,33 +1,14 @@
-# Product Requirements Document (PRD)
+# DoNext（仮）PRD v1.0
+目的：やりたいことを「次の一手」と「予定」に変換して放置を防ぐ。AI提案は使わない。
 
-## Overview
+## コア価値
+- Goal（やりたいこと）を60秒で Step（次の一手）にし、今週枠へ入れる
+- 週次レビューで「今週の1Goal」に収束させて継続利用させる
 
-<!-- プロダクトの概要を記載 -->
+## 非ゴール（v1ではやらない）
+- AI/LLMによる提案・自動分解
+- 公開SNSフィード、チャット
+- 外部予約API統合
 
-## Background
-
-<!-- 背景・課題を記載 -->
-
-## Goals
-
-<!-- 目標を記載 -->
-
-## Target Users
-
-<!-- ターゲットユーザーを記載 -->
-
-## Functional Requirements
-
-<!-- 機能要件を記載 -->
-
-## Non-Functional Requirements
-
-<!-- 非機能要件を記載 -->
-
-## Success Metrics
-
-<!-- 成功指標を記載 -->
-
-## Timeline
-
-<!-- タイムラインを記載 -->
+## 対象OS
+- iOS 17+（SwiftUI / SwiftData）
