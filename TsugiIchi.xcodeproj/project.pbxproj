@@ -269,14 +269,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1540;
-				LastUpgradeCheck = 1540;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
 				TargetAttributes = {
 					ED8C2EAAFCDC53CB870DBD69 = {
-						CreatedOnToolsVersion = 15.4;
+						CreatedOnToolsVersion = 15.3;
 					};
 					C2C4441AFCF95D0AAC074F5F = {
-						CreatedOnToolsVersion = 15.4;
+						CreatedOnToolsVersion = 15.3;
 						TestTargetID = ED8C2EAAFCDC53CB870DBD69;
 					};
 				};
@@ -499,7 +499,7 @@
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.tsugiichi;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -528,7 +528,7 @@
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.tsugiichi;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -549,7 +549,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.TsugiIchiTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.TsugiIchiTests;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -572,7 +572,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.TsugiIchiTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.TsugiIchiTests;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;

@@ -311,14 +311,14 @@ w(f"\t\t{I('project')} /* Project object */ = {{")
 w(f"\t\t\tisa = PBXProject;")
 w(f"\t\t\tattributes = {{")
 w(f"\t\t\t\tBuildIndependentTargetsInParallel = 1;")
-w(f"\t\t\t\tLastSwiftUpdateCheck = 1540;")
-w(f"\t\t\t\tLastUpgradeCheck = 1540;")
+w(f"\t\t\t\tLastSwiftUpdateCheck = 1530;")
+w(f"\t\t\t\tLastUpgradeCheck = 1530;")
 w(f"\t\t\t\tTargetAttributes = {{")
 w(f"\t\t\t\t\t{I('tg_app')} = {{")
-w(f"\t\t\t\t\t\tCreatedOnToolsVersion = 15.4;")
+w(f"\t\t\t\t\t\tCreatedOnToolsVersion = 15.3;")
 w(f"\t\t\t\t\t}};")
 w(f"\t\t\t\t\t{I('tg_tests')} = {{")
-w(f"\t\t\t\t\t\tCreatedOnToolsVersion = 15.4;")
+w(f"\t\t\t\t\t\tCreatedOnToolsVersion = 15.3;")
 w(f"\t\t\t\t\t\tTestTargetID = {I('tg_app')};")
 w(f"\t\t\t\t\t}};")
 w(f"\t\t\t\t}};")
@@ -503,7 +503,7 @@ app_settings = [
     '"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";',
     '"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";',
     "MARKETING_VERSION = 1.0;",
-    "PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.tsugiichi;",
+    "PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi;",
     '"PRODUCT_NAME" = "$(TARGET_NAME)";',
     "SWIFT_EMIT_LOC_STRINGS = YES;",
     "SWIFT_VERSION = 5.0;",
@@ -532,7 +532,7 @@ test_settings = [
     "GENERATE_INFOPLIST_FILE = YES;",
     "IPHONEOS_DEPLOYMENT_TARGET = 17.0;",
     "MARKETING_VERSION = 1.0;",
-    "PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.TsugiIchiTests;",
+    "PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.TsugiIchiTests;",
     '"PRODUCT_NAME" = "$(TARGET_NAME)";',
     "SWIFT_EMIT_LOC_STRINGS = NO;",
     "SWIFT_VERSION = 5.0;",
