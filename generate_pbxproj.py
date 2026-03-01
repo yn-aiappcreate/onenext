@@ -13,7 +13,7 @@ for key in [
     "fr_backlog_tab", "fr_goal_form", "fr_goal_detail",
     "fr_plan_tab", "fr_review_tab", "fr_settings_tab",
     "fr_empty_state",
-    "fr_template_engine", "fr_date_helper", "fr_constants",
+    "fr_template_engine", "fr_notification_manager", "fr_date_helper", "fr_constants",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
 ]:
@@ -26,7 +26,7 @@ for key in [
     "bf_backlog_tab", "bf_goal_form", "bf_goal_detail",
     "bf_plan_tab", "bf_review_tab", "bf_settings_tab",
     "bf_empty_state",
-    "bf_template_engine", "bf_date_helper", "bf_constants",
+    "bf_template_engine", "bf_notification_manager", "bf_date_helper", "bf_constants",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
     ids[key] = make_id(key)
@@ -62,6 +62,7 @@ bf_to_fr = {
     "bf_review_tab": ("fr_review_tab", "ReviewTab.swift"),
     "bf_settings_tab": ("fr_settings_tab", "SettingsTab.swift"),
     "bf_template_engine": ("fr_template_engine", "TemplateEngine.swift"),
+    "bf_notification_manager": ("fr_notification_manager", "NotificationManager.swift"),
     "bf_date_helper": ("fr_date_helper", "DateHelper.swift"),
     "bf_constants": ("fr_constants", "Constants.swift"),
     "bf_empty_state": ("fr_empty_state", "EmptyStateView.swift"),
@@ -74,7 +75,7 @@ app_sources = [
     "bf_app_swift", "bf_content_view", "bf_goal", "bf_step", "bf_planslot",
     "bf_reviewlog", "bf_backlog_tab", "bf_goal_form", "bf_goal_detail",
     "bf_plan_tab", "bf_review_tab",
-    "bf_settings_tab", "bf_template_engine", "bf_date_helper", "bf_constants",
+    "bf_settings_tab", "bf_template_engine", "bf_notification_manager", "bf_date_helper", "bf_constants",
     "bf_empty_state",
 ]
 app_resources = ["bf_assets"]
@@ -135,6 +136,7 @@ fr_info = [
     ("fr_review_tab", "lastKnownFileType = sourcecode.swift", "ReviewTab.swift", '"<group>"'),
     ("fr_settings_tab", "lastKnownFileType = sourcecode.swift", "SettingsTab.swift", '"<group>"'),
     ("fr_template_engine", "lastKnownFileType = sourcecode.swift", "TemplateEngine.swift", '"<group>"'),
+    ("fr_notification_manager", "lastKnownFileType = sourcecode.swift", "NotificationManager.swift", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
     ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
@@ -243,6 +245,7 @@ for grp, fr, fname, path in [
 
 write_group("gr_services", "Services", [
     ("fr_template_engine", "TemplateEngine.swift"),
+    ("fr_notification_manager", "NotificationManager.swift"),
 ], path="Services")
 
 write_group("gr_utilities", "Utilities", [

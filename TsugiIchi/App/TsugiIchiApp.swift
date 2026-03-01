@@ -6,6 +6,10 @@ struct TsugiIchiApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    NotificationManager.requestPermission()
+                    NotificationManager.scheduleWeeklyReview()
+                }
         }
         .modelContainer(for: [
             Goal.self,

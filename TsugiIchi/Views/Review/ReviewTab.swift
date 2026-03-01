@@ -57,7 +57,12 @@ struct ReviewTab: View {
                         .padding(.vertical, 12)
                     } else {
                         ForEach(unfinishedScheduledSteps) { step in
-                            ReviewStepRow(step: step)
+                            ReviewStepRow(
+                                step: step,
+                                onDone: { markStep(step, as: .done) },
+                                onPostpone: { markStep(step, as: .postponed) },
+                                onDiscard: { markStep(step, as: .discarded) }
+                            )
                         }
                     }
                 } header: {
@@ -218,6 +223,11 @@ struct ReviewTab: View {
         }
     }
 
+    /// ステップのステータスを変更
+    private func markStep(_ step: Step, as newStatus: StepStatus) {
+        step.status = newStatus
+    }
+
     /// レビューを完了してReviewLogを記録
     private func completeReview() {
         let log = ReviewLog(weekId: currentWeekId)
@@ -230,29 +240,67 @@ struct ReviewTab: View {
 
 private struct ReviewStepRow: View {
     let step: Step
+    let onDone: () -> Void
+    let onPostpone: () -> Void
+    let onDiscard: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "calendar.circle.fill")
-                .foregroundStyle(.blue)
-                .frame(width: 20)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Image(systemName: "calendar.circle.fill")
+                    .foregroundStyle(.blue)
+                    .frame(width: 20)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(step.title)
-                    .font(.body)
-                HStack(spacing: 8) {
-                    if let goalTitle = step.goal?.title {
-                        Label(goalTitle, systemImage: "target")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(step.title)
+                        .font(.body)
+                    HStack(spacing: 8) {
+                        if let goalTitle = step.goal?.title {
+                            Label(goalTitle, systemImage: "target")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                        Label("\(step.durationMin)分", systemImage: "clock")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
                     }
-                    Label("\(step.durationMin)分", systemImage: "clock")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
+
+                Spacer()
+            }
+
+            HStack(spacing: 12) {
+                Spacer()
+                Button {
+                    onDone()
+                } label: {
+                    Label("完了", systemImage: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    onPostpone()
+                } label: {
+                    Label("延期", systemImage: "arrow.uturn.right.circle")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    onDiscard()
+                } label: {
+                    Label("破棄", systemImage: "xmark.circle")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+                .buttonStyle(.plain)
             }
         }
+        .padding(.vertical, 2)
     }
 }
 
