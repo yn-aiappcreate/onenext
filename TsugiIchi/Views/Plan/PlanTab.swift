@@ -4,6 +4,7 @@ import SwiftData
 struct PlanTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allSlots: [PlanSlot]
+    @Query private var allGoals: [Goal]
 
     private var currentWeekId: String { DateHelper.weekId() }
 
@@ -102,6 +103,17 @@ struct PlanTab: View {
 
     private func markStep(_ step: Step, as newStatus: StepStatus) {
         step.status = newStatus
+        checkGoalCompletion(for: step)
+    }
+
+    /// 全Step完了時にGoalを自動完了
+    private func checkGoalCompletion(for step: Step) {
+        guard let goal = step.goal, !goal.steps.isEmpty else { return }
+        let allDone = goal.steps.allSatisfy { $0.status == .done || $0.status == .discarded }
+        let hasAtLeastOneDone = goal.steps.contains { $0.status == .done }
+        if allDone && hasAtLeastOneDone && goal.status != .completed {
+            goal.status = .completed
+        }
     }
 
     private func formattedDuration(_ minutes: Int) -> String {
