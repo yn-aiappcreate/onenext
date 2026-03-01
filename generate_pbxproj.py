@@ -10,7 +10,9 @@ ids = {}
 for key in [
     "fr_app_swift", "fr_content_view", "fr_assets", "fr_preview_assets",
     "fr_goal", "fr_step", "fr_planslot", "fr_reviewlog",
-    "fr_backlog_tab", "fr_plan_tab", "fr_review_tab", "fr_settings_tab",
+    "fr_backlog_tab", "fr_goal_form", "fr_goal_detail",
+    "fr_plan_tab", "fr_review_tab", "fr_settings_tab",
+    "fr_empty_state",
     "fr_template_engine", "fr_date_helper", "fr_constants",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
@@ -21,7 +23,9 @@ for key in [
 for key in [
     "bf_app_swift", "bf_content_view", "bf_assets",
     "bf_goal", "bf_step", "bf_planslot", "bf_reviewlog",
-    "bf_backlog_tab", "bf_plan_tab", "bf_review_tab", "bf_settings_tab",
+    "bf_backlog_tab", "bf_goal_form", "bf_goal_detail",
+    "bf_plan_tab", "bf_review_tab", "bf_settings_tab",
+    "bf_empty_state",
     "bf_template_engine", "bf_date_helper", "bf_constants",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
@@ -30,7 +34,7 @@ for key in [
 # Groups, Targets, Phases, Configs, Lists, Other
 for key in [
     "gr_main", "gr_onenext", "gr_app", "gr_models", "gr_views",
-    "gr_backlog", "gr_plan", "gr_review", "gr_settings",
+    "gr_backlog", "gr_plan", "gr_review", "gr_settings", "gr_components",
     "gr_services", "gr_utilities", "gr_preview", "gr_tests", "gr_products",
     "tg_app", "tg_tests",
     "bp_app_sources", "bp_app_frameworks", "bp_app_resources",
@@ -52,12 +56,15 @@ bf_to_fr = {
     "bf_planslot": ("fr_planslot", "PlanSlot.swift"),
     "bf_reviewlog": ("fr_reviewlog", "ReviewLog.swift"),
     "bf_backlog_tab": ("fr_backlog_tab", "BacklogTab.swift"),
+    "bf_goal_form": ("fr_goal_form", "GoalFormSheet.swift"),
+    "bf_goal_detail": ("fr_goal_detail", "GoalDetailView.swift"),
     "bf_plan_tab": ("fr_plan_tab", "PlanTab.swift"),
     "bf_review_tab": ("fr_review_tab", "ReviewTab.swift"),
     "bf_settings_tab": ("fr_settings_tab", "SettingsTab.swift"),
     "bf_template_engine": ("fr_template_engine", "TemplateEngine.swift"),
     "bf_date_helper": ("fr_date_helper", "DateHelper.swift"),
     "bf_constants": ("fr_constants", "Constants.swift"),
+    "bf_empty_state": ("fr_empty_state", "EmptyStateView.swift"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
     "bf_datehelper_tests": ("fr_datehelper_tests", "DateHelperTests.swift"),
@@ -65,8 +72,10 @@ bf_to_fr = {
 
 app_sources = [
     "bf_app_swift", "bf_content_view", "bf_goal", "bf_step", "bf_planslot",
-    "bf_reviewlog", "bf_backlog_tab", "bf_plan_tab", "bf_review_tab",
+    "bf_reviewlog", "bf_backlog_tab", "bf_goal_form", "bf_goal_detail",
+    "bf_plan_tab", "bf_review_tab",
     "bf_settings_tab", "bf_template_engine", "bf_date_helper", "bf_constants",
+    "bf_empty_state",
 ]
 app_resources = ["bf_assets"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
@@ -120,12 +129,15 @@ fr_info = [
     ("fr_planslot", "lastKnownFileType = sourcecode.swift", "PlanSlot.swift", '"<group>"'),
     ("fr_reviewlog", "lastKnownFileType = sourcecode.swift", "ReviewLog.swift", '"<group>"'),
     ("fr_backlog_tab", "lastKnownFileType = sourcecode.swift", "BacklogTab.swift", '"<group>"'),
+    ("fr_goal_form", "lastKnownFileType = sourcecode.swift", "GoalFormSheet.swift", '"<group>"'),
+    ("fr_goal_detail", "lastKnownFileType = sourcecode.swift", "GoalDetailView.swift", '"<group>"'),
     ("fr_plan_tab", "lastKnownFileType = sourcecode.swift", "PlanTab.swift", '"<group>"'),
     ("fr_review_tab", "lastKnownFileType = sourcecode.swift", "ReviewTab.swift", '"<group>"'),
     ("fr_settings_tab", "lastKnownFileType = sourcecode.swift", "SettingsTab.swift", '"<group>"'),
     ("fr_template_engine", "lastKnownFileType = sourcecode.swift", "TemplateEngine.swift", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
+    ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
     ("fr_product_app", "explicitFileType = wrapper.application", "TsugiIchi.app", "BUILT_PRODUCTS_DIR"),
     ("fr_product_tests", "explicitFileType = wrapper.cfbundle", "TsugiIchiTests.xctest", "BUILT_PRODUCTS_DIR"),
     ("fr_model_tests", "lastKnownFileType = sourcecode.swift", "ModelTests.swift", '"<group>"'),
@@ -209,10 +221,20 @@ write_group("gr_views", "Views", [
     ("gr_plan", "Plan"),
     ("gr_review", "Review"),
     ("gr_settings", "Settings"),
+    ("gr_components", "Components"),
 ], path="Views")
 
+write_group("gr_backlog", "Backlog", [
+    ("fr_backlog_tab", "BacklogTab.swift"),
+    ("fr_goal_form", "GoalFormSheet.swift"),
+    ("fr_goal_detail", "GoalDetailView.swift"),
+], path="Backlog")
+
+write_group("gr_components", "Components", [
+    ("fr_empty_state", "EmptyStateView.swift"),
+], path="Components")
+
 for grp, fr, fname, path in [
-    ("gr_backlog", "fr_backlog_tab", "BacklogTab.swift", "Backlog"),
     ("gr_plan", "fr_plan_tab", "PlanTab.swift", "Plan"),
     ("gr_review", "fr_review_tab", "ReviewTab.swift", "Review"),
     ("gr_settings", "fr_settings_tab", "SettingsTab.swift", "Settings"),
