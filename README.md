@@ -1,4 +1,4 @@
-# OneNext
+# ツギイチ (TsugiIchi)
 
 **やりたいことを「次の一手」と「予定」に変換して放置を防ぐ** iOS アプリ。
 
@@ -20,12 +20,20 @@ cd onenext
 2. Xcode でプロジェクトを開く
 
 ```bash
-open OneNext.xcodeproj
+open TsugiIchi.xcodeproj
 ```
 
 3. シミュレータを選択して Run (⌘R)
 
 - 推奨: iPhone 15 / iPhone 16 (iOS 17+)
+
+## Bundle ID の変更
+
+Bundle ID は仮置きで `com.<MY_DOMAIN>.tsugiichi` となっています。
+以下の箇所を自分のドメインに置換してください：
+
+- `generate_pbxproj.py` 内の `com.MY_DOMAIN.tsugiichi` および `com.MY_DOMAIN.TsugiIchiTests`
+- 置換後、`python3 generate_pbxproj.py` を実行して `TsugiIchi.xcodeproj/project.pbxproj` を再生成
 
 ## テスト実行
 
@@ -35,7 +43,7 @@ Xcode から:
 コマンドラインから:
 ```bash
 xcodebuild test \
-  -scheme OneNext \
+  -scheme TsugiIchi \
   -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGNING_REQUIRED=NO \
@@ -52,13 +60,13 @@ xcodebuild test \
 ## プロジェクト構成
 
 ```
-OneNext/
+TsugiIchi/
 ├── App/              # @main エントリポイント, ContentView (TabView)
 ├── Models/           # SwiftData モデル (Goal, Step, PlanSlot, ReviewLog)
 ├── Views/            # タブごとの View (Backlog, Plan, Review, Settings)
 ├── Services/         # TemplateEngine (固定ロジック Step 生成)
 └── Utilities/        # DateHelper, Constants
-OneNextTests/         # XCTest ユニットテスト
+TsugiIchiTests/       # XCTest ユニットテスト
 Docs/                 # PRD, MVP_SCOPE, ARCHITECTURE 等
 ```
 

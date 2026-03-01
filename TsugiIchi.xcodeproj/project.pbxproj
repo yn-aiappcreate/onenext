@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E8A999D113EE5082B383FD16 /* OneNextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45269DBAF855F77B370FA9F /* OneNextApp.swift */; };
+		E8A999D113EE5082B383FD16 /* TsugiIchiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45269DBAF855F77B370FA9F /* TsugiIchiApp.swift */; };
 		E649D7A58CF05BEEA23952CB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF5591825E88547D96BDA0BD /* ContentView.swift */; };
 		C6DD360D988859EEA8484941 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F2544218D65751BFB0CFCAEA /* Assets.xcassets */; };
 		254D3E6A1349539F8E093866 /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859A253C696A555E8C53944D /* Goal.swift */; };
@@ -32,12 +32,12 @@
 			containerPortal = 30C3DAC6571F5D478AF3B7EF /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = ED8C2EAAFCDC53CB870DBD69;
-			remoteInfo = OneNext;
+			remoteInfo = TsugiIchi;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B45269DBAF855F77B370FA9F /* OneNextApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneNextApp.swift; sourceTree = "<group>"; };
+		B45269DBAF855F77B370FA9F /* TsugiIchiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TsugiIchiApp.swift; sourceTree = "<group>"; };
 		DF5591825E88547D96BDA0BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F2544218D65751BFB0CFCAEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ED2355BC68B75BC688B8F8BA /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -52,8 +52,8 @@
 		264E92D5005F5D4C8152606B /* TemplateEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateEngine.swift; sourceTree = "<group>"; };
 		D47B0EDEE3175ED1AEFB10AE /* DateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelper.swift; sourceTree = "<group>"; };
 		D5717457275C5239BF1D81EF /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		E0EB1886EBA857E789745978 /* OneNext.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OneNext.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9447B68C07A756C1AA1EAC99 /* OneNextTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OneNextTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0EB1886EBA857E789745978 /* TsugiIchi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TsugiIchi.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9447B68C07A756C1AA1EAC99 /* TsugiIchiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TsugiIchiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		A6008C347D80505980DB8174 /* TemplateEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateEngineTests.swift; sourceTree = "<group>"; };
 		533E02662A195F7293225DA9 /* DateHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelperTests.swift; sourceTree = "<group>"; };
@@ -80,13 +80,13 @@
 		5CA0B78FD70657BB919735B8 /*  */ = {
 			isa = PBXGroup;
 			children = (
-				3DDED454EC2055889EF00E23 /* OneNext */,
-				4AC352B1E5BA5134B5787BC7 /* OneNextTests */,
+				3DDED454EC2055889EF00E23 /* TsugiIchi */,
+				4AC352B1E5BA5134B5787BC7 /* TsugiIchiTests */,
 				74A0C726C4125595A08146BF /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		3DDED454EC2055889EF00E23 /* OneNext */ = {
+		3DDED454EC2055889EF00E23 /* TsugiIchi */ = {
 			isa = PBXGroup;
 			children = (
 				BFF0159BC6EB5E818E6FC748 /* App */,
@@ -95,13 +95,13 @@
 				58593C7BD77F5F2B9AE02A7E /* Services */,
 				4CF9346E5B8A582C9955A7F3 /* Utilities */,
 			);
-			path = OneNext;
+			path = TsugiIchi;
 			sourceTree = "<group>";
 		};
 		BFF0159BC6EB5E818E6FC748 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				B45269DBAF855F77B370FA9F /* OneNextApp.swift */,
+				B45269DBAF855F77B370FA9F /* TsugiIchiApp.swift */,
 				DF5591825E88547D96BDA0BD /* ContentView.swift */,
 				F2544218D65751BFB0CFCAEA /* Assets.xcassets */,
 				789C2048B94653E589951124 /* Preview Content */,
@@ -188,21 +188,21 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
-		4AC352B1E5BA5134B5787BC7 /* OneNextTests */ = {
+		4AC352B1E5BA5134B5787BC7 /* TsugiIchiTests */ = {
 			isa = PBXGroup;
 			children = (
 				E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */,
 				A6008C347D80505980DB8174 /* TemplateEngineTests.swift */,
 				533E02662A195F7293225DA9 /* DateHelperTests.swift */,
 			);
-			path = OneNextTests;
+			path = TsugiIchiTests;
 			sourceTree = "<group>";
 		};
 		74A0C726C4125595A08146BF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E0EB1886EBA857E789745978 /* OneNext.app */,
-				9447B68C07A756C1AA1EAC99 /* OneNextTests.xctest */,
+				E0EB1886EBA857E789745978 /* TsugiIchi.app */,
+				9447B68C07A756C1AA1EAC99 /* TsugiIchiTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -210,9 +210,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		ED8C2EAAFCDC53CB870DBD69 /* OneNext */ = {
+		ED8C2EAAFCDC53CB870DBD69 /* TsugiIchi */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4528D126F89A512FAEEB5BFC /* Build configuration list for PBXNativeTarget "OneNext" */;
+			buildConfigurationList = 4528D126F89A512FAEEB5BFC /* Build configuration list for PBXNativeTarget "TsugiIchi" */;
 			buildPhases = (
 				B6EF0635906258C3A7487819 /* Sources */,
 				2A445F0D715C575DBD183A61 /* Frameworks */,
@@ -222,14 +222,14 @@
 			);
 			dependencies = (
 			);
-			name = OneNext;
-			productName = OneNext;
-			productReference = E0EB1886EBA857E789745978 /* OneNext.app */;
+			name = TsugiIchi;
+			productName = TsugiIchi;
+			productReference = E0EB1886EBA857E789745978 /* TsugiIchi.app */;
 			productType = "com.apple.product-type.application";
 		};
-		C2C4441AFCF95D0AAC074F5F /* OneNextTests */ = {
+		C2C4441AFCF95D0AAC074F5F /* TsugiIchiTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8A21A182A3985E3C8FEA5625 /* Build configuration list for PBXNativeTarget "OneNextTests" */;
+			buildConfigurationList = 8A21A182A3985E3C8FEA5625 /* Build configuration list for PBXNativeTarget "TsugiIchiTests" */;
 			buildPhases = (
 				1FD212BFCCE15B76ACA55591 /* Sources */,
 				466177B43B59587CAEDE9988 /* Frameworks */,
@@ -240,9 +240,9 @@
 			dependencies = (
 				BEF387994DD653169B612A89 /* PBXTargetDependency */,
 			);
-			name = OneNextTests;
-			productName = OneNextTests;
-			productReference = 9447B68C07A756C1AA1EAC99 /* OneNextTests.xctest */;
+			name = TsugiIchiTests;
+			productName = TsugiIchiTests;
+			productReference = 9447B68C07A756C1AA1EAC99 /* TsugiIchiTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -264,7 +264,7 @@
 					};
 				};
 			};
-			buildConfigurationList = ABD4E9C3C89C5B05AEEE42F3 /* Build configuration list for PBXProject "OneNext" */;
+			buildConfigurationList = ABD4E9C3C89C5B05AEEE42F3 /* Build configuration list for PBXProject "TsugiIchi" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = ja;
 			hasScannedForEncodings = 0;
@@ -277,8 +277,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				ED8C2EAAFCDC53CB870DBD69 /* OneNext */,
-				C2C4441AFCF95D0AAC074F5F /* OneNextTests */,
+				ED8C2EAAFCDC53CB870DBD69 /* TsugiIchi */,
+				C2C4441AFCF95D0AAC074F5F /* TsugiIchiTests */,
 			);
 		};
 /* End PBXProject section */
@@ -306,7 +306,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8A999D113EE5082B383FD16 /* OneNextApp.swift in Sources */,
+				E8A999D113EE5082B383FD16 /* TsugiIchiApp.swift in Sources */,
 				E649D7A58CF05BEEA23952CB /* ContentView.swift in Sources */,
 				254D3E6A1349539F8E093866 /* Goal.swift in Sources */,
 				2F45D7D703115D1695171A86 /* Step.swift in Sources */,
@@ -337,7 +337,7 @@
 /* Begin PBXTargetDependency section */
 		BEF387994DD653169B612A89 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = ED8C2EAAFCDC53CB870DBD69 /* OneNext */;
+			target = ED8C2EAAFCDC53CB870DBD69 /* TsugiIchi */;
 			targetProxy = F9AEC51AFC0E59CAB60EBA83 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -469,16 +469,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"OneNext/App/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TsugiIchi/App/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_CFBundleDisplayName" = "\U30c4\U30ae\U30a4\U30c1";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.onenext.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.tsugiichi;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -497,16 +498,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"OneNext/App/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TsugiIchi/App/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_CFBundleDisplayName" = "\U30c4\U30ae\U30a4\U30c1";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.onenext.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.tsugiichi;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -527,12 +529,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.onenext.OneNextTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.TsugiIchiTests;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				"TARGETED_DEVICE_FAMILY" = "1,2";
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/OneNext.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OneNext";
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/TsugiIchi.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TsugiIchi";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -550,12 +552,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.onenext.OneNextTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.MY_DOMAIN.TsugiIchiTests;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				"TARGETED_DEVICE_FAMILY" = "1,2";
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/OneNext.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OneNext";
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/TsugiIchi.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TsugiIchi";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -567,7 +569,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		ABD4E9C3C89C5B05AEEE42F3 /* Build configuration list for PBXProject "OneNext" */ = {
+		ABD4E9C3C89C5B05AEEE42F3 /* Build configuration list for PBXProject "TsugiIchi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A774F536FDDC50E1A05A5A9C /* Debug */,
@@ -576,7 +578,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4528D126F89A512FAEEB5BFC /* Build configuration list for PBXNativeTarget "OneNext" */ = {
+		4528D126F89A512FAEEB5BFC /* Build configuration list for PBXNativeTarget "TsugiIchi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4FD89885B1965F62AFF36E99 /* Debug */,
@@ -585,7 +587,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8A21A182A3985E3C8FEA5625 /* Build configuration list for PBXNativeTarget "OneNextTests" */ = {
+		8A21A182A3985E3C8FEA5625 /* Build configuration list for PBXNativeTarget "TsugiIchiTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F09C5DA196D535AA164EF71 /* Debug */,

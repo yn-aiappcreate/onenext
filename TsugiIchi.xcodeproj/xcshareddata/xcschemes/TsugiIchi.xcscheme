@@ -4,8 +4,7 @@
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES"
-      buildArchitectures = "Automatic">
+      buildImplicitDependencies = "YES">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -16,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "ED8C2EAAFCDC53CB870DBD69"
-               BuildableName = "OneNext.app"
-               BlueprintName = "OneNext"
-               ReferencedContainer = "container:OneNext.xcodeproj">
+               BuildableName = "TsugiIchi.app"
+               BlueprintName = "TsugiIchi"
+               ReferencedContainer = "container:TsugiIchi.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -31,14 +30,13 @@
       shouldAutocreateTestPlan = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C2C4441AFCF95D0AAC074F5F"
-               BuildableName = "OneNextTests.xctest"
-               BlueprintName = "OneNextTests"
-               ReferencedContainer = "container:OneNext.xcodeproj">
+               BuildableName = "TsugiIchiTests.xctest"
+               BlueprintName = "TsugiIchiTests"
+               ReferencedContainer = "container:TsugiIchi.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -58,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "ED8C2EAAFCDC53CB870DBD69"
-            BuildableName = "OneNext.app"
-            BlueprintName = "OneNext"
-            ReferencedContainer = "container:OneNext.xcodeproj">
+            BuildableName = "TsugiIchi.app"
+            BlueprintName = "TsugiIchi"
+            ReferencedContainer = "container:TsugiIchi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -75,9 +73,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "ED8C2EAAFCDC53CB870DBD69"
-            BuildableName = "OneNext.app"
-            BlueprintName = "OneNext"
-            ReferencedContainer = "container:OneNext.xcodeproj">
+            BuildableName = "TsugiIchi.app"
+            BlueprintName = "TsugiIchi"
+            ReferencedContainer = "container:TsugiIchi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

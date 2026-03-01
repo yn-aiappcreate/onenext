@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct OneNextApp: App {
+struct TsugiIchiApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

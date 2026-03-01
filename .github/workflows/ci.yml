@@ -17,7 +17,7 @@ jobs:
       - name: Build
         run: |
           xcodebuild build \
-            -scheme OneNext \
+            -scheme TsugiIchi \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
@@ -27,7 +27,7 @@ jobs:
       - name: Test
         run: |
           xcodebuild test \
-            -scheme OneNext \
+            -scheme TsugiIchi \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \

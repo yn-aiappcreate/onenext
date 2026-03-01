@@ -1,4 +1,4 @@
-# OneNext 実装計画 (M0〜M5)
+# ツギイチ (TsugiIchi) 実装計画 (M0〜M5)
 
 > 制約: AI/LLM禁止 ・ 依存ライブラリ最小 ・ MVP優先 ・ iOS 17+ / SwiftUI / SwiftData
 
@@ -15,10 +15,10 @@ onenext/
 │   └── workflows/ci.yml
 │
 ├── OneNext/                       # ← Xcode Project Root
-│   ├── OneNext.xcodeproj
+│   ├── TsugiIchi.xcodeproj
 │   │
 │   ├── App/
-│   │   ├── OneNextApp.swift       # @main エントリポイント
+│   │   ├── TsugiIchiApp.swift       # @main エントリポイント
 │   │   ├── ContentView.swift      # TabView (Backlog/Plan/Review/Settings)
 │   │   └── Assets.xcassets
 │   │
@@ -70,21 +70,21 @@ onenext/
 │   │
 │   └── Info.plist
 │
-├── OneNextTests/                  # ユニットテスト
+├── TsugiIchiTests/                  # ユニットテスト
 │   ├── TemplateEngineTests.swift
 │   ├── PlanServiceTests.swift
 │   ├── ReviewServiceTests.swift
 │   └── ModelTests.swift
 │
-├── OneNextUITests/                # UIテスト（後から追加可）
+├── TsugiIchiUITests/                # UIテスト（後から追加可）
 │
 ├── README.md
 └── .gitignore
 ```
 
 ### ポイント
-- **Xcode プロジェクト名**: `OneNext`（scheme名も `OneNext`）
-- **CI の scheme**: `OneNext`（ci.yml の `-scheme DoNext` → `-scheme OneNext` に修正）
+- **Xcode プロジェクト名**: `OneNext`（scheme名も `TsugiIchi`）
+- **CI の scheme**: `OneNext`（ci.yml の `-scheme DoNext` → `-scheme TsugiIchi` に修正）
 - **フォルダ参照**: Xcode の Group = 実ファイルシステムのフォルダ（Group with Folder を使用）
 - **外部ライブラリ**: 原則ゼロ。xcpretty は CI のみ（`brew install xcpretty` or `gem`）
 
@@ -318,7 +318,7 @@ final class ReviewLog {
 ```
 
 **方針まとめ:**
-1. **ModelContainer** は `OneNextApp.swift` で1箇所だけ生成し `.modelContainer()` で全 View に注入
+1. **ModelContainer** は `TsugiIchiApp.swift` で1箇所だけ生成し `.modelContainer()` で全 View に注入
 2. **@Query** を View 内で直接使い、リストの取得はSwiftDataに任せる（シンプルな画面はViewModelなしで `@Query` 直接でもOK）
 3. **@Observable ViewModel** は複雑なビジネスロジック（テンプレ生成、レビューフロー）のある画面で使う
 4. **画面間のデータ受け渡し** は `NavigationPath` + SwiftData の `PersistentIdentifier` で行う（Goalオブジェクト自体を渡さない → スレッド安全）
@@ -336,9 +336,9 @@ final class ReviewLog {
 
 ```
 OneNext/
-├── OneNext.xcodeproj              # Xcode プロジェクト（iOS 17, SwiftUI lifecycle）
+├── TsugiIchi.xcodeproj              # Xcode プロジェクト（iOS 17, SwiftUI lifecycle）
 ├── App/
-│   ├── OneNextApp.swift           # @main + ModelContainer 設定
+│   ├── TsugiIchiApp.swift           # @main + ModelContainer 設定
 │   ├── ContentView.swift          # TabView（4タブの空スタブ）
 │   └── Assets.xcassets            # AppIcon placeholder
 ├── Models/
@@ -358,20 +358,20 @@ OneNext/
 │   └── Constants.swift
 └── Info.plist                     # カメラ/写真/通知の UsageDescription
 
-OneNextTests/
+TsugiIchiTests/
 ├── ModelTests.swift               # Goal/Step の生成・関連テスト
 └── TemplateEngineTests.swift      # テンプレの出力件数テスト
 
 .github/
-└── workflows/ci.yml              # scheme名を "OneNext" に修正
+└── workflows/ci.yml              # scheme名を "TsugiIchi" に修正
 
 .gitignore                         # Xcode / Swift 用
 README.md                          # セットアップ手順
 ```
 
 #### M0 の受け入れ条件
-- [ ] `xcodebuild -scheme OneNext build` が成功する
-- [ ] `xcodebuild -scheme OneNext test` が成功する（ModelTests + TemplateEngineTests）
+- [ ] `xcodebuild -scheme TsugiIchi build` が成功する
+- [ ] `xcodebuild -scheme TsugiIchi test` が成功する（ModelTests + TemplateEngineTests）
 - [ ] GitHub Actions CI が green になる
 - [ ] シミュレータで4タブが表示される
 - [ ] SwiftData の ModelContainer がクラッシュせず起動する
@@ -394,12 +394,12 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
       - name: Build
         run: |
-          xcodebuild -scheme OneNext \
+          xcodebuild -scheme TsugiIchi \
             -destination 'platform=iOS Simulator,name=iPhone 15' \
             build | xcpretty
       - name: Test
         run: |
-          xcodebuild -scheme OneNext \
+          xcodebuild -scheme TsugiIchi \
             -destination 'platform=iOS Simulator,name=iPhone 15' \
             test | xcpretty
 ```
@@ -432,7 +432,7 @@ jobs:
 | Goal 保存後に TemplatePickerSheet を表示 | `Views/Backlog/GoalFormSheet.swift` |
 | 生成された Step を GoalDetailView に表示 | `Views/Backlog/GoalDetailView.swift` |
 | Step の手動追加/編集/削除 | `Views/Backlog/StepRow.swift` |
-| TemplateEngineTests 拡充 | `OneNextTests/` |
+| TemplateEngineTests 拡充 | `TsugiIchiTests/` |
 
 **受け入れ:** テンプレを選ぶと Step が 3〜8件生成される。手動で Step を追加/削除できる。
 
@@ -446,7 +446,7 @@ jobs:
 | scheduleStep() / unscheduleStep() | `Services/PlanService.swift` |
 | Step.status を `.scheduled` に更新 | PlanService |
 | weekId 生成の DateHelper | `Utilities/DateHelper.swift` |
-| PlanServiceTests | `OneNextTests/` |
+| PlanServiceTests | `TsugiIchiTests/` |
 
 **受け入れ:** Step を1件「今週枠」に入れられる / 外せる。
 
@@ -460,7 +460,7 @@ jobs:
 | GoalPickerSheet（Backlog から 1Goal 選択） | `Views/Review/GoalPickerSheet.swift` |
 | autoPlaceNext3Steps()（選択した Goal の pending Step 上位3件を枠に配置） | `Services/ReviewService.swift` |
 | ReviewLog 保存 | ReviewService |
-| ReviewServiceTests | `OneNextTests/` |
+| ReviewServiceTests | `TsugiIchiTests/` |
 
 **受け入れ:** 週次レビューで未完了確認 → 1Goal選択 → 次の3Stepが今週枠に配置される。
 

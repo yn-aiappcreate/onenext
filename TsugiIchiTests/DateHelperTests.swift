@@ -1,5 +1,5 @@
 import XCTest
-@testable import OneNext
+@testable import TsugiIchi
 
 final class DateHelperTests: XCTestCase {
 
