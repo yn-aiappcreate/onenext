@@ -62,7 +62,7 @@ private struct GoalRow: View {
         HStack(spacing: 12) {
             if let category = goal.category {
                 Image(systemName: category.systemImage)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.accentColor)
                     .frame(width: 24)
             } else {
                 Image(systemName: "target")
