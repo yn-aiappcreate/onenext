@@ -42,9 +42,9 @@ struct ReviewTab: View {
         weekStepsAll.filter { $0.status == .discarded }.count
     }
 
-    /// 今週の全Step（スロットに紐づくもの全て）
+    /// 今週の全Step（スロットに紐づくもの全て、orphaned slots除外）
     private var weekStepsAll: [Step] {
-        allSlots.filter { $0.weekId == currentWeekId }.compactMap { $0.step }
+        allSlots.filter { $0.weekId == currentWeekId && $0.step != nil }.compactMap { $0.step }
     }
 
     /// 延期済みのStep（再スケジュール候補）
@@ -67,9 +67,9 @@ struct ReviewTab: View {
         allReviewLogs.contains { $0.weekId == currentWeekId }
     }
 
-    /// 今週のスロット数
+    /// 今週のスロット数（orphaned slots除外）
     private var currentWeekSlotCount: Int {
-        allSlots.filter { $0.weekId == currentWeekId }.count
+        allSlots.filter { $0.weekId == currentWeekId && $0.step != nil }.count
     }
 
     var body: some View {
