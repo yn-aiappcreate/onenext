@@ -217,6 +217,7 @@ private struct StepRow: View {
     let step: Step
     var onStatusChange: (() -> Void)?
     @Query private var allSlots: [PlanSlot]
+    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
 
     private var isScheduled: Bool {
         step.status == .scheduled
@@ -310,6 +311,14 @@ private struct StepRow: View {
         step.status = .scheduled
         step.scheduledAt = Date()
         onStatusChange?()
+        if calendarSyncEnabled {
+            CalendarService.addEvent(
+                for: step.title,
+                stepId: step.id,
+                durationMin: step.durationMin,
+                goalTitle: step.goal?.title
+            )
+        }
     }
 
     private func removeFromPlan() {
@@ -320,6 +329,9 @@ private struct StepRow: View {
         step.status = .pending
         step.scheduledAt = nil
         onStatusChange?()
+        if calendarSyncEnabled {
+            CalendarService.removeEvent(for: step.id)
+        }
     }
 
     private var statusIcon: String {

@@ -4,6 +4,7 @@ import SwiftData
 struct SettingsTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
 
     // MARK: - 通知設定
     @AppStorage("notificationWeekday") private var notificationWeekday: Int = 1   // 1=日曜
@@ -18,10 +19,14 @@ struct SettingsTab: View {
     @AppStorage("aiEndpointURL") private var aiEndpointURL = Constants.defaultAIProxyURL
     @AppStorage("aiAuthToken") private var aiAuthToken = Constants.defaultAIAuthToken
 
+    // MARK: - カレンダー連携
+    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
+
     // MARK: - エクスポート
     @State private var showExportSheet = false
     @State private var exportCSV: String = ""
     @State private var exportFileName: String = ""
+    @State private var showPaywall = false
 
     private var weekdayNames: [String] {
         [String(localized: "日曜日"), String(localized: "月曜日"), String(localized: "火曜日"),
@@ -118,6 +123,25 @@ struct SettingsTab: View {
                     Text("AIステップ生成には、自前のプロキシサーバーが必要です。APIキーはアプリに埋め込まれていません。")
                 }
 
+                // MARK: - カレンダー連携
+                Section {
+                    Toggle("カレンダー同期", isOn: $calendarSyncEnabled)
+                        .onChange(of: calendarSyncEnabled) { _, enabled in
+                            if enabled {
+                                Task {
+                                    let granted = await CalendarService.requestAccess()
+                                    if !granted {
+                                        calendarSyncEnabled = false
+                                    }
+                                }
+                            }
+                        }
+                } header: {
+                    Text("カレンダー連携")
+                } footer: {
+                    Text("有効にすると、今週枠に追加したStepがiPhoneのカレンダーアプリに自動で登録されます。")
+                }
+
                 // MARK: - データエクスポート
                 Section("データエクスポート") {
                     Button {
@@ -131,6 +155,41 @@ struct SettingsTab: View {
                     } label: {
                         Label("Step一覧をCSVエクスポート", systemImage: "square.and.arrow.up")
                     }
+                }
+
+                // MARK: - サブスクリプション
+                Section {
+                    if subscriptionManager.isProUser {
+                        HStack {
+                            Image(systemName: "star.circle.fill")
+                                .foregroundStyle(.yellow)
+                            Text("Pro プラン利用中")
+                                .fontWeight(.semibold)
+                        }
+                    } else {
+                        Button {
+                            showPaywall = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "star.circle")
+                                    .foregroundStyle(.yellow)
+                                Text("ツギイチ Pro にアップグレード")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
+                    Button("購入を復元") {
+                        Task {
+                            await subscriptionManager.restorePurchases()
+                        }
+                    }
+                    .font(.footnote)
+                } header: {
+                    Text("サブスクリプション")
                 }
 
                 // MARK: - アプリ情報
@@ -151,6 +210,12 @@ struct SettingsTab: View {
             }
             .sheet(isPresented: $showExportSheet) {
                 CSVShareSheet(csv: exportCSV, fileName: exportFileName)
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
+            }
+            .task {
+                await subscriptionManager.updateSubscriptionStatus()
             }
         }
     }
