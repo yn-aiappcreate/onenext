@@ -46,6 +46,8 @@
 		D51A5EDD3CFE593AA4A33CBA /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */; };
 		4D7427777CA25DE8AA0B0AEF /* TemplateEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6008C347D80505980DB8174 /* TemplateEngineTests.swift */; };
 		2761F5B8F7E850938CC0B276 /* DateHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533E02662A195F7293225DA9 /* DateHelperTests.swift */; };
+		W1D1A1B1C1D1E1F101112131 /* TsugiIchiWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */; };
+		W3D3A3B3C3D3E3F303132333 /* TsugiIchiWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +57,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = ED8C2EAAFCDC53CB870DBD69;
 			remoteInfo = TsugiIchi;
+		};
+		W5D5A5B5C5D5E5F505152535 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 30C3DAC6571F5D478AF3B7EF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = W6D6A6B6C6D6E6F606162636;
+			remoteInfo = TsugiIchiWidgetExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -101,6 +110,8 @@
 		E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		A6008C347D80505980DB8174 /* TemplateEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateEngineTests.swift; sourceTree = "<group>"; };
 		533E02662A195F7293225DA9 /* DateHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelperTests.swift; sourceTree = "<group>"; };
+		W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TsugiIchiWidget.swift; sourceTree = "<group>"; };
+		W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TsugiIchiWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +129,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		W7D7A7B7C7D7E7F707172737 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -125,9 +143,18 @@
 			isa = PBXGroup;
 			children = (
 				3DDED454EC2055889EF00E23 /* TsugiIchi */,
+				W8D8A8B8C8D8E8F808182838 /* TsugiIchiWidget */,
 				4AC352B1E5BA5134B5787BC7 /* TsugiIchiTests */,
 				74A0C726C4125595A08146BF /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		W8D8A8B8C8D8E8F808182838 /* TsugiIchiWidget */ = {
+			isa = PBXGroup;
+			children = (
+				W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */,
+			);
+			path = TsugiIchiWidget;
 			sourceTree = "<group>";
 		};
 		3DDED454EC2055889EF00E23 /* TsugiIchi */ = {
@@ -308,6 +335,7 @@
 			isa = PBXGroup;
 			children = (
 				E0EB1886EBA857E789745978 /* TsugiIchi.app */,
+				W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */,
 				9447B68C07A756C1AA1EAC99 /* TsugiIchiTests.xctest */,
 			);
 			name = Products;
@@ -323,10 +351,12 @@
 				B6EF0635906258C3A7487819 /* Sources */,
 				2A445F0D715C575DBD183A61 /* Frameworks */,
 				8493FE7CD9E3573FB2CA3F94 /* Resources */,
+				WADAAABACAADAEAFA0A1A2A3 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				WBDBBABBCBBDBEBFB0B1B2B3 /* PBXTargetDependency */,
 			);
 			name = TsugiIchi;
 			productName = TsugiIchi;
@@ -351,6 +381,23 @@
 			productReference = 9447B68C07A756C1AA1EAC99 /* TsugiIchiTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		W6D6A6B6C6D6E6F606162636 /* TsugiIchiWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = WCDCACBCCCDDCECFC0C1C2C3 /* Build configuration list for PBXNativeTarget "TsugiIchiWidgetExtension" */;
+			buildPhases = (
+				W9D9A9B9C9D9E9F909192939 /* Sources */,
+				W7D7A7B7C7D7E7F707172737 /* Frameworks */,
+				WEDEAEBECEDEEEFE0E1E2E3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TsugiIchiWidgetExtension;
+			productName = TsugiIchiWidgetExtension;
+			productReference = W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -367,6 +414,9 @@
 					C2C4441AFCF95D0AAC074F5F = {
 						CreatedOnToolsVersion = 15.2;
 						TestTargetID = ED8C2EAAFCDC53CB870DBD69;
+					};
+					W6D6A6B6C6D6E6F606162636 = {
+						CreatedOnToolsVersion = 15.2;
 					};
 				};
 			};
@@ -390,10 +440,25 @@
 			projectRoot = "";
 			targets = (
 				ED8C2EAAFCDC53CB870DBD69 /* TsugiIchi */,
+				W6D6A6B6C6D6E6F606162636 /* TsugiIchiWidgetExtension */,
 				C2C4441AFCF95D0AAC074F5F /* TsugiIchiTests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		WADAAABACAADAEAFA0A1A2A3 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				W3D3A3B3C3D3E3F303132333 /* TsugiIchiWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8493FE7CD9E3573FB2CA3F94 /* Resources */ = {
@@ -406,6 +471,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DB071D9B1F885E96A3B4F762 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		WEDEAEBECEDEEEFE0E1E2E3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -466,6 +538,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		W9D9A9B9C9D9E9F909192939 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				W1D1A1B1C1D1E1F101112131 /* TsugiIchiWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -473,6 +553,11 @@
 			isa = PBXTargetDependency;
 			target = ED8C2EAAFCDC53CB870DBD69 /* TsugiIchi */;
 			targetProxy = F9AEC51AFC0E59CAB60EBA83 /* PBXContainerItemProxy */;
+		};
+		WBDBBABBCBBDBEBFB0B1B2B3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = W6D6A6B6C6D6E6F606162636 /* TsugiIchiWidgetExtension */;
+			targetProxy = W5D5A5B5C5D5E5F505152535 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -704,6 +789,54 @@
 			};
 			name = Release;
 		};
+		WFDFAFBFCFDFEFFF0F1F2F3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TsugiIchiWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi.widget;
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+			};
+			name = Debug;
+		};
+		WGDGAGBGCGDGEGFG0G1G2G3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TsugiIchiWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi.widget;
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -730,6 +863,15 @@
 			buildConfigurations = (
 				7F09C5DA196D535AA164EF71 /* Debug */,
 				3D6218CED40A53FCB7C70284 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		WCDCACBCCCDDCECFC0C1C2C3 /* Build configuration list for PBXNativeTarget "TsugiIchiWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				WFDFAFBFCFDFEFFF0F1F2F3 /* Debug */,
+				WGDGAGBGCGDGEGFG0G1G2G3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
