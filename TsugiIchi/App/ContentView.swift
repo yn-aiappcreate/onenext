@@ -1,6 +1,8 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
@@ -31,9 +33,24 @@ struct ContentView: View {
                         Label("Settings", systemImage: "gearshape")
                     }
             }
+            .onAppear {
+                cleanUpOrphanedPlanSlots()
+            }
         } else {
             OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
         }
+    }
+
+    /// Remove PlanSlots whose step has been deleted (orphaned by cascade delete)
+    private func cleanUpOrphanedPlanSlots() {
+        let descriptor = FetchDescriptor<PlanSlot>()
+        guard let allSlots = try? modelContext.fetch(descriptor) else { return }
+        for slot in allSlots {
+            if slot.step == nil {
+                modelContext.delete(slot)
+            }
+        }
+        try? modelContext.save()
     }
 }
 
