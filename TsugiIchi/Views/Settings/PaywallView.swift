@@ -87,6 +87,15 @@ struct PaywallView: View {
                                         .foregroundStyle(.green)
                                 }
                                 .padding()
+
+                                // Show upgrade option: monthly → yearly only
+                                if entitlements.activeProductId == BillingProduct.proMonthly.rawValue {
+                                    YearlyProductButton {
+                                        if let yearly = billing.proYearlyProduct {
+                                            Task { await billing.purchase(yearly) }
+                                        }
+                                    }
+                                }
                             } else {
                                 // Not subscribed - show both options
                                 // Yearly plan (recommended)
