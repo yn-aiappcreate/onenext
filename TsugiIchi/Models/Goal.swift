@@ -1,5 +1,5 @@
 import SwiftData
-import SwiftUI
+import Foundation
 
 @Model
 final class Goal {
@@ -49,7 +49,13 @@ enum GoalCategory: String, Codable, CaseIterable, Identifiable {
 
     /// Localized display name (rawValue is kept for SwiftData storage).
     var localizedName: String {
-        String(localized: String.LocalizationValue(rawValue))
+        switch self {
+        case .travel:   String(localized: "旅行")
+        case .event:    String(localized: "イベント")
+        case .learning: String(localized: "学習")
+        case .health:   String(localized: "健康")
+        case .hobby:    String(localized: "趣味")
+        }
     }
 
     var systemImage: String {
