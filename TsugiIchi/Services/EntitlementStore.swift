@@ -9,6 +9,10 @@ final class EntitlementStore: ObservableObject {
 
     @Published private(set) var isPro: Bool = false
 
+    /// The JWS representation of the current Pro transaction for server-side verification (M12).
+    /// This is sent to the Proxy so it can cryptographically verify Pro status.
+    private(set) var proTransactionJWS: String?
+
     private init() {
         Task { await refresh() }
     }
@@ -18,6 +22,7 @@ final class EntitlementStore: ObservableObject {
     /// Re-check subscription status from StoreKit.
     func refresh() async {
         var foundPro = false
+        var jws: String?
 
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result else { continue }
@@ -25,11 +30,13 @@ final class EntitlementStore: ObservableObject {
                 // Check the subscription hasn't been revoked
                 if transaction.revocationDate == nil {
                     foundPro = true
+                    jws = result.jwsRepresentation
                 }
             }
         }
 
         isPro = foundPro
+        proTransactionJWS = jws
     }
 
     // MARK: - Convenience

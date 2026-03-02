@@ -73,11 +73,15 @@ enum AIService {
         request.setValue(preferredLang, forHTTPHeaderField: "Accept-Language")
         // Send client ID for credit tracking (M11 Proxy uses this)
         request.setValue(ClientId.current, forHTTPHeaderField: "X-Client-Id")
-        // Send Pro status and purchased credits so Proxy can apply correct limits (MVP: trusted)
+        // Send Pro status and purchased credits so Proxy can apply correct limits
         let isPro = await EntitlementStore.shared.isPro
         request.setValue(isPro ? "true" : "false", forHTTPHeaderField: "X-Is-Pro")
         let purchased = await CreditsStore.shared.purchasedCredits
         request.setValue(String(purchased), forHTTPHeaderField: "X-Purchased-Credits")
+        // Send signed transaction for server-side Pro verification (M12)
+        if let jws = await EntitlementStore.shared.proTransactionJWS {
+            request.setValue(jws, forHTTPHeaderField: "X-Signed-Transaction")
+        }
         request.timeoutInterval = 30
 
         let encoder = JSONEncoder()

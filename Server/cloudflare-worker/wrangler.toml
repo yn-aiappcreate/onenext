@@ -13,6 +13,12 @@ OPENAI_MODEL = "gpt-4o-mini"
 MAX_INPUT_LENGTH = "2000"
 RATE_LIMIT_PER_MINUTE = "10"
 
+# M12: Server-side Pro verification
+# アプリの Bundle ID（Apple JWS 検証で使用）
+BUNDLE_ID = "com.ynlabs.tsugiichi"
+# Pro サブスクリプションの Product ID
+PRO_PRODUCT_ID = "tsugiichi.pro.monthly"
+
 # KV Namespace for credit tracking (M11)
 # ⠀⠀wrangler kv:namespace create CREDITS_KV ⠀で作成後、id を以下に貼る
 [[kv_namespaces]]
