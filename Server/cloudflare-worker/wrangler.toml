@@ -1,0 +1,14 @@
+# ツギイチ AI Proxy - Cloudflare Worker 設定
+#
+# ⚠️ 秘密鍵（OPENAI_API_KEY）はここに書かない。
+#    wrangler secret put OPENAI_API_KEY で設定すること。
+
+name = "tsugiichi-ai-proxy"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# 環境変数（非秘密）
+[vars]
+OPENAI_MODEL = "gpt-4o-mini"
+MAX_INPUT_LENGTH = "2000"
+RATE_LIMIT_PER_MINUTE = "10"

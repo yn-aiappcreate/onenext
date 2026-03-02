@@ -15,6 +15,8 @@ for key in [
     "fr_empty_state",
     "fr_template_engine", "fr_notification_manager", "fr_csv_exporter", "fr_date_helper", "fr_constants",
     "fr_onboarding_view",
+    "fr_ai_models", "fr_ai_service", "fr_redactor",
+    "fr_ai_consent_view", "fr_ai_step_sheet",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
 ]:
@@ -29,6 +31,8 @@ for key in [
     "bf_empty_state",
     "bf_template_engine", "bf_notification_manager", "bf_csv_exporter", "bf_date_helper", "bf_constants",
     "bf_onboarding_view",
+    "bf_ai_models", "bf_ai_service", "bf_redactor",
+    "bf_ai_consent_view", "bf_ai_step_sheet",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
     ids[key] = make_id(key)
@@ -39,6 +43,7 @@ for key in [
     "gr_backlog", "gr_plan", "gr_review", "gr_settings", "gr_components",
     "gr_services", "gr_utilities", "gr_preview", "gr_tests", "gr_products",
     "gr_onboarding",
+    "gr_ai",
     "tg_app", "tg_tests",
     "bp_app_sources", "bp_app_frameworks", "bp_app_resources",
     "bp_tests_sources", "bp_tests_frameworks", "bp_tests_resources",
@@ -71,6 +76,11 @@ bf_to_fr = {
     "bf_constants": ("fr_constants", "Constants.swift"),
     "bf_empty_state": ("fr_empty_state", "EmptyStateView.swift"),
     "bf_onboarding_view": ("fr_onboarding_view", "OnboardingView.swift"),
+    "bf_ai_models": ("fr_ai_models", "AIModels.swift"),
+    "bf_ai_service": ("fr_ai_service", "AIService.swift"),
+    "bf_redactor": ("fr_redactor", "Redactor.swift"),
+    "bf_ai_consent_view": ("fr_ai_consent_view", "AIConsentView.swift"),
+    "bf_ai_step_sheet": ("fr_ai_step_sheet", "AIStepSheet.swift"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
     "bf_datehelper_tests": ("fr_datehelper_tests", "DateHelperTests.swift"),
@@ -83,6 +93,8 @@ app_sources = [
     "bf_settings_tab", "bf_template_engine", "bf_notification_manager", "bf_csv_exporter",
     "bf_date_helper", "bf_constants",
     "bf_empty_state", "bf_onboarding_view",
+    "bf_ai_models", "bf_ai_service", "bf_redactor",
+    "bf_ai_consent_view", "bf_ai_step_sheet",
 ]
 app_resources = ["bf_assets"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
@@ -145,6 +157,11 @@ fr_info = [
     ("fr_notification_manager", "lastKnownFileType = sourcecode.swift", "NotificationManager.swift", '"<group>"'),
     ("fr_csv_exporter", "lastKnownFileType = sourcecode.swift", "CSVExporter.swift", '"<group>"'),
     ("fr_onboarding_view", "lastKnownFileType = sourcecode.swift", "OnboardingView.swift", '"<group>"'),
+    ("fr_ai_models", "lastKnownFileType = sourcecode.swift", "AIModels.swift", '"<group>"'),
+    ("fr_ai_service", "lastKnownFileType = sourcecode.swift", "AIService.swift", '"<group>"'),
+    ("fr_redactor", "lastKnownFileType = sourcecode.swift", "Redactor.swift", '"<group>"'),
+    ("fr_ai_consent_view", "lastKnownFileType = sourcecode.swift", "AIConsentView.swift", '"<group>"'),
+    ("fr_ai_step_sheet", "lastKnownFileType = sourcecode.swift", "AIStepSheet.swift", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
     ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
@@ -224,6 +241,7 @@ write_group("gr_models", "Models", [
     ("fr_step", "Step.swift"),
     ("fr_planslot", "PlanSlot.swift"),
     ("fr_reviewlog", "ReviewLog.swift"),
+    ("fr_ai_models", "AIModels.swift"),
 ], path="Models")
 
 write_group("gr_views", "Views", [
@@ -233,6 +251,7 @@ write_group("gr_views", "Views", [
     ("gr_settings", "Settings"),
     ("gr_components", "Components"),
     ("gr_onboarding", "Onboarding"),
+    ("gr_ai", "AI"),
 ], path="Views")
 
 write_group("gr_backlog", "Backlog", [
@@ -256,10 +275,17 @@ write_group("gr_onboarding", "Onboarding", [
     ("fr_onboarding_view", "OnboardingView.swift"),
 ], path="Onboarding")
 
+write_group("gr_ai", "AI", [
+    ("fr_ai_consent_view", "AIConsentView.swift"),
+    ("fr_ai_step_sheet", "AIStepSheet.swift"),
+], path="AI")
+
 write_group("gr_services", "Services", [
     ("fr_template_engine", "TemplateEngine.swift"),
     ("fr_notification_manager", "NotificationManager.swift"),
     ("fr_csv_exporter", "CSVExporter.swift"),
+    ("fr_ai_service", "AIService.swift"),
+    ("fr_redactor", "Redactor.swift"),
 ], path="Services")
 
 write_group("gr_utilities", "Utilities", [
