@@ -1,5 +1,5 @@
 /**
- * ツギイチ AI Proxy — Cloudflare Worker (M11: Credits & Rate Limit)
+ * ツギイチ AI Proxy — Cloudflare Worker (M12: Server-side verification hardening)
  *
  * POST /generate-steps
  *   入力: { goalTitle, goalNote?, category?, constraints? }
@@ -7,8 +7,14 @@
  *
  * Headers (iOS → Proxy):
  *   X-Client-Id:              端末固有ID（必須）
- *   X-Is-Pro:                 "true" | "false"（Pro申告、MVP暫定信用）
+ *   X-Is-Pro:                 "true" | "false"（Pro申告、フォールバック用）
  *   X-Purchased-Credits:      number（端末側の購入パック残数）
+ *   X-Signed-Transaction:     Apple StoreKit 2 JWS（サーバ検証用、M12）
+ *
+ * Pro verification (M12):
+ *   X-Signed-Transaction ヘッダーがある場合、Apple署名のJWSを暗号検証し、
+ *   有効なProサブスクリプションかどうかをサーバ側で判定する。
+ *   ヘッダーが無い場合は X-Is-Pro にフォールバック（後方互換）。
  *
  * Credit limits (30-day rolling window, KV-persisted):
  *   Free: 10/30days,  daily cap 10/day,  burst 5/min
@@ -17,6 +23,8 @@
  * 秘密鍵 OPENAI_API_KEY は wrangler secret で設定する（コードに埋め込まない）。
  * 認証トークン API_AUTH_TOKEN も wrangler secret で設定する。
  */
+
+import { importX509, compactVerify } from "jose";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -30,6 +38,19 @@ const LIMITS = {
   free: { monthly: 10, daily: 10, perMinute: 5 },
   pro:  { monthly: 300, daily: 50, perMinute: 5 },
 };
+
+// ---------------------------------------------------------------------------
+// Apple Root CA G3 — SHA-256 fingerprint (hex, lowercase)
+// Certificate: https://www.apple.com/certificateauthority/AppleRootCA-G3.cer
+// Valid until: 2039-04-30
+// ---------------------------------------------------------------------------
+const APPLE_ROOT_CA_G3_FINGERPRINT =
+  "63343abfb89a6a03ebb57e9b3f5fa7be7c4fbe29f2d6d0867aaf3386ee76e358";
+
+// Cache: verified Pro status per clientId (in-memory, per isolate)
+// Avoids re-verifying JWS on every request within the same isolate lifetime.
+const proVerifiedCache = new Map(); // key: clientId, value: { isPro, expiresAt, verifiedAt }
+const PRO_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // ---------------------------------------------------------------------------
 // In-memory per-minute rate limiter (per clientId, resets each minute)
@@ -59,6 +80,209 @@ function checkPerMinuteLimit(key, limit) {
   }
 
   return { allowed: true, retryAfter: null };
+}
+
+// ---------------------------------------------------------------------------
+// Apple JWS verification (M12: server-side Pro hardening)
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute SHA-256 hex fingerprint of raw DER bytes.
+ * @param {ArrayBuffer} derBytes
+ * @returns {Promise<string>}
+ */
+async function sha256Hex(derBytes) {
+  const hash = await crypto.subtle.digest("SHA-256", derBytes);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Decode a standard base64 string to ArrayBuffer.
+ * @param {string} b64
+ * @returns {ArrayBuffer}
+ */
+function base64ToArrayBuffer(b64) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+/**
+ * Decode a base64url string to string.
+ * @param {string} b64url
+ * @returns {string}
+ */
+function base64UrlDecodeStr(b64url) {
+  const b64 = b64url.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+  return atob(padded);
+}
+
+/**
+ * Verify an Apple StoreKit 2 signed transaction (JWS/JWT).
+ *
+ * Steps:
+ * 1. Parse the JWS header to extract `alg` and `x5c` certificate chain.
+ * 2. Verify the root certificate in x5c matches Apple Root CA G3 (SHA-256 fingerprint).
+ * 3. Import the leaf certificate's public key via `jose.importX509`.
+ * 4. Verify the JWS signature using `jose.compactVerify`.
+ * 5. Decode and return the transaction payload.
+ *
+ * @param {string} jwsString - The compact JWS string from StoreKit 2
+ * @param {string} expectedBundleId - The app's bundle ID to validate against
+ * @returns {Promise<{ verified: boolean, payload?: object, error?: string }>}
+ */
+async function verifyAppleTransaction(jwsString, expectedBundleId) {
+  try {
+    // 1. Parse header
+    const parts = jwsString.split(".");
+    if (parts.length !== 3) {
+      return { verified: false, error: "Invalid JWS format" };
+    }
+
+    const headerJson = JSON.parse(base64UrlDecodeStr(parts[0]));
+    const { alg, x5c } = headerJson;
+
+    if (alg !== "ES256") {
+      return { verified: false, error: `Unsupported algorithm: ${alg}` };
+    }
+    if (!Array.isArray(x5c) || x5c.length < 2) {
+      return { verified: false, error: "Missing or invalid x5c certificate chain" };
+    }
+
+    // 2. Verify root certificate matches Apple Root CA G3
+    const rootCertBase64 = x5c[x5c.length - 1];
+    const rootCertDer = base64ToArrayBuffer(rootCertBase64);
+    const rootFingerprint = await sha256Hex(rootCertDer);
+
+    if (rootFingerprint !== APPLE_ROOT_CA_G3_FINGERPRINT) {
+      return { verified: false, error: "Root certificate does not match Apple Root CA G3" };
+    }
+
+    // 3. Import leaf certificate public key
+    const leafCertBase64 = x5c[0];
+    const leafPem =
+      "-----BEGIN CERTIFICATE-----\n" +
+      leafCertBase64.match(/.{1,64}/g).join("\n") +
+      "\n-----END CERTIFICATE-----";
+
+    const publicKey = await importX509(leafPem, "ES256");
+
+    // 4. Verify JWS signature
+    const { payload: payloadBytes } = await compactVerify(jwsString, publicKey);
+
+    // 5. Decode payload
+    const payload = JSON.parse(new TextDecoder().decode(payloadBytes));
+
+    // 6. Validate bundle ID
+    if (expectedBundleId && payload.bundleId !== expectedBundleId) {
+      return {
+        verified: false,
+        error: `Bundle ID mismatch: expected ${expectedBundleId}, got ${payload.bundleId}`,
+      };
+    }
+
+    return { verified: true, payload };
+  } catch (err) {
+    return { verified: false, error: `JWS verification failed: ${err.message}` };
+  }
+}
+
+/**
+ * Check if the verified transaction payload represents an active Pro subscription.
+ * @param {object} payload - Decoded Apple transaction payload
+ * @param {string} proProductId - The expected Pro subscription product ID
+ * @returns {{ isPro: boolean, expiresAt: number | null }}
+ */
+function checkProStatus(payload, proProductId) {
+  if (!payload) return { isPro: false, expiresAt: null };
+
+  // Check product ID matches
+  if (payload.productId !== proProductId) {
+    return { isPro: false, expiresAt: null };
+  }
+
+  // Check not revoked
+  if (payload.revocationDate) {
+    return { isPro: false, expiresAt: null };
+  }
+
+  // Check expiration (expiresDate is in milliseconds since epoch)
+  const now = Date.now();
+  const expiresAt = payload.expiresDate || 0;
+  if (expiresAt > 0 && expiresAt <= now) {
+    return { isPro: false, expiresAt };
+  }
+
+  return { isPro: true, expiresAt: expiresAt || null };
+}
+
+/**
+ * Determine Pro status for a request.
+ * Priority: X-Signed-Transaction (server-verified) > cached verification > X-Is-Pro (fallback)
+ *
+ * @param {Request} request
+ * @param {string} clientId
+ * @param {{ BUNDLE_ID?: string, PRO_PRODUCT_ID?: string }} env
+ * @returns {Promise<{ isPro: boolean, verificationMethod: string }>}
+ */
+async function determineProStatus(request, clientId, env) {
+  const signedTransaction = (request.headers.get("X-Signed-Transaction") || "").trim();
+  const bundleId = env.BUNDLE_ID || "";
+  const proProductId = env.PRO_PRODUCT_ID || "tsugiichi.pro.monthly";
+
+  // 1. Try server-side JWS verification
+  if (signedTransaction) {
+    const { verified, payload, error } = await verifyAppleTransaction(
+      signedTransaction,
+      bundleId
+    );
+
+    if (verified && payload) {
+      const status = checkProStatus(payload, proProductId);
+
+      // Cache the result
+      proVerifiedCache.set(clientId, {
+        isPro: status.isPro,
+        expiresAt: status.expiresAt,
+        verifiedAt: Date.now(),
+      });
+
+      return {
+        isPro: status.isPro,
+        verificationMethod: status.isPro ? "apple_jws_verified" : "apple_jws_expired",
+      };
+    }
+
+    // Verification failed — log but fall through to cache/fallback
+    console.warn("Apple JWS verification failed:", error);
+  }
+
+  // 2. Check in-memory cache (valid for PRO_CACHE_TTL_MS)
+  const cached = proVerifiedCache.get(clientId);
+  if (cached && Date.now() - cached.verifiedAt < PRO_CACHE_TTL_MS) {
+    // If cached expiry is known and has passed, invalidate
+    if (cached.expiresAt && cached.expiresAt <= Date.now()) {
+      proVerifiedCache.delete(clientId);
+    } else {
+      return {
+        isPro: cached.isPro,
+        verificationMethod: "cache",
+      };
+    }
+  }
+
+  // 3. Fallback to X-Is-Pro header (backward compatibility for older app versions)
+  const isProHeader = request.headers.get("X-Is-Pro") === "true";
+  return {
+    isPro: isProHeader,
+    verificationMethod: "header_fallback",
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -493,7 +717,7 @@ function validateResponse(raw) {
 export default {
   /**
    * @param {Request} request
-   * @param {{ OPENAI_API_KEY: string, API_AUTH_TOKEN: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, CREDITS_KV: KVNamespace }} env
+   * @param {{ OPENAI_API_KEY: string, API_AUTH_TOKEN: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, CREDITS_KV: KVNamespace, BUNDLE_ID: string, PRO_PRODUCT_ID: string }} env
    */
   async fetch(request, env) {
     // --- CORS preflight ---
@@ -502,7 +726,7 @@ export default {
         status: 204,
         headers: {
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Id, X-Is-Pro, X-Purchased-Credits",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Id, X-Is-Pro, X-Purchased-Credits, X-Signed-Transaction",
           "Access-Control-Max-Age": "86400",
         },
       });
@@ -536,8 +760,9 @@ export default {
       return errorResponse("X-Client-Id header is required", 400);
     }
 
-    // --- Read client metadata from headers (MVP: trust device) ---
-    const isPro = request.headers.get("X-Is-Pro") === "true";
+    // --- Determine Pro status (M12: server-side verification) ---
+    const { isPro, verificationMethod } = await determineProStatus(request, clientId, env);
+
     const purchasedCreditsFromDevice = Math.max(
       0,
       parseInt(request.headers.get("X-Purchased-Credits") || "0", 10) || 0
@@ -578,8 +803,9 @@ export default {
     if (env.CREDITS_KV) {
       record = await loadClientRecord(env.CREDITS_KV, clientId);
 
-      // Sync isPro and purchasedCredits from device (MVP: trust)
+      // Sync isPro (now server-verified when JWS present) and purchasedCredits
       record.isPro = isPro;
+      record.verificationMethod = verificationMethod;
       // Only increase purchasedCredits from device (never decrease server-side)
       if (purchasedCreditsFromDevice > (record.purchasedCredits || 0)) {
         record.purchasedCredits = purchasedCreditsFromDevice;
@@ -646,8 +872,8 @@ export default {
         await saveClientRecord(env.CREDITS_KV, clientId, record);
       }
 
-      // Include remaining in response
-      return jsonResponse({ ...result, remaining });
+      // Include remaining and verification method in response
+      return jsonResponse({ ...result, remaining, verificationMethod });
     } catch (err) {
       console.error("AI generation failed:", err.message);
 

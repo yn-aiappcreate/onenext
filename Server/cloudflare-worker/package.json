@@ -9,5 +9,8 @@
   },
   "devDependencies": {
     "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "jose": "^6.1.3"
   }
 }

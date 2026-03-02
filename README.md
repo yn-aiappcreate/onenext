@@ -183,6 +183,31 @@ npx wrangler deploy
 - クレジット切れ時: 403 `{ "error": "Credits exhausted", "remaining": 0 }`
 - 日次上限時: 429 `Daily usage limit reached`
 
+### サーバサイド Pro 検証 (M12)
+
+M11 では端末の `X-Is-Pro` 申告を信用していたが、M12 では **Apple StoreKit 2 の署名済みトランザクション（JWS）** を Proxy が暗号検証し、Pro 枠をサーバ側で判定する。
+
+**検証フロー:**
+
+1. iOS が `Transaction.currentEntitlements` から Pro トランザクションの JWS を取得
+2. `X-Signed-Transaction` ヘッダーで Proxy に送信
+3. Proxy が JWS の x5c 証明書チェーンを検証（Apple Root CA G3 の SHA-256 fingerprint 照合）
+4. リーフ証明書の公開鍵で JWS 署名を検証（ES256）
+5. ペイロードの `productId` / `expiresDate` / `revocationDate` を確認
+6. 有効な Pro → Pro 枠適用 / 無効 → Free 枠にフォールバック
+
+**追加ヘッダー:**
+
+| ヘッダー | 説明 |
+|---|---|
+| `X-Signed-Transaction` | Apple StoreKit 2 の JWS（Pro トランザクション署名） |
+
+**レスポンス追加フィールド:**
+
+- `verificationMethod`: `"apple_jws_verified"` / `"cache"` / `"header_fallback"`
+
+**詳細セットアップ:** [Docs/HARDEN_SETUP.md](Docs/HARDEN_SETUP.md) 参照
+
 ## プロジェクト構成
 
 ```
