@@ -117,45 +117,9 @@ struct SettingsTab: View {
             Toggle("AIアシストを有効にする", isOn: $aiAssistEnabled)
 
             if aiAssistEnabled {
-                // Connection status indicator
-                HStack {
-                    Image(systemName: aiEndpointURL != Constants.defaultAIProxyURL && !aiEndpointURL.isEmpty
-                          ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                        .foregroundStyle(aiEndpointURL != Constants.defaultAIProxyURL && !aiEndpointURL.isEmpty
-                                         ? Color.green : Color.orange)
-                    Text(aiEndpointURL != Constants.defaultAIProxyURL && !aiEndpointURL.isEmpty
-                         ? "Proxy接続済み" : "Proxyが未設定です")
-                        .font(.subheadline)
-                }
-
                 Toggle("送信前に毎回確認", isOn: $aiConfirmBeforeSend)
 
                 Toggle("個人情報を自動マスク", isOn: $aiAutoRedact)
-
-                DisclosureGroup("詳細設定") {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("エンドポイントURL（Proxy）")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("https://your-proxy.example.com", text: $aiEndpointURL)
-                            .font(.system(.body, design: .monospaced))
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .keyboardType(.URL)
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("認証トークン（任意）")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        SecureField("Bearer token", text: $aiAuthToken)
-                            .font(.system(.body, design: .monospaced))
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                    }
-
-                    LabeledContent("プロバイダ", value: "自前Proxy経由")
-                }
 
                 if aiConsentGiven {
                     Button(role: .destructive) {
@@ -176,7 +140,7 @@ struct SettingsTab: View {
         } header: {
             Text("AIアシスト")
         } footer: {
-            Text("設定はこのデバイスにのみ保存されます。他のユーザーに表示されることはありません。")
+            Text("Goal詳細画面からAIでステップ案を自動生成できます。")
         }
     }
 
