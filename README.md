@@ -146,6 +146,43 @@ App Store Connect の「App Privacy」で以下の申告が必要です:
 - 消費順：月次枠 → 購入枠（購入枠は期限なし）
 - 枠切れ時はPaywall表示（テンプレート生成は常に可能）
 
+### Proxy クレジット & レート制限 (M11)
+
+Proxy（Cloudflare Workers）側で `clientId` 単位のクレジット管理とレート制限を実施します。
+
+**KV Namespace セットアップ:**
+
+```bash
+cd Server/cloudflare-worker
+npx wrangler kv:namespace create CREDITS_KV
+# 出力された id を wrangler.toml の id に貼る
+npx wrangler kv:namespace create CREDITS_KV --preview
+# 出力された preview_id を wrangler.toml の preview_id に貼る
+npx wrangler deploy
+```
+
+**iOS → Proxy ヘッダー:**
+
+| ヘッダー | 説明 |
+|---|---|
+| `X-Client-Id` | 端末固有ID（Keychain保存、必須） |
+| `X-Is-Pro` | `"true"` / `"false"`（MVP: 端末申告を信用） |
+| `X-Purchased-Credits` | 購入パック残数（端末側の値） |
+
+**レート制限:**
+
+| 制限 | Free | Pro |
+|---|---|---|
+| 30日枠 | 10回 | 300回 |
+| 日次上限 | 10回/日 | 50回/日 |
+| バースト | 5回/分 | 5回/分 |
+
+**レスポンス:** `{ "steps": [...], "remaining": number }`
+
+- `remaining`: Proxy側で計算した残クレジット数。iOSはこの値でUI表示を同期
+- クレジット切れ時: 403 `{ "error": "Credits exhausted", "remaining": 0 }`
+- 日次上限時: 429 `Daily usage limit reached`
+
 ## プロジェクト構成
 
 ```

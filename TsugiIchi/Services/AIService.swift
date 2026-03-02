@@ -71,8 +71,13 @@ enum AIService {
         // Send device preferred language so the Worker can generate prompts in the right language
         let preferredLang = Locale.preferredLanguages.first ?? "ja"
         request.setValue(preferredLang, forHTTPHeaderField: "Accept-Language")
-        // Send client ID for credit tracking (M11+ Proxy will use this)
+        // Send client ID for credit tracking (M11 Proxy uses this)
         request.setValue(ClientId.current, forHTTPHeaderField: "X-Client-Id")
+        // Send Pro status and purchased credits so Proxy can apply correct limits (MVP: trusted)
+        let isPro = await EntitlementStore.shared.isPro
+        request.setValue(isPro ? "true" : "false", forHTTPHeaderField: "X-Is-Pro")
+        let purchased = await CreditsStore.shared.purchasedCredits
+        request.setValue(String(purchased), forHTTPHeaderField: "X-Purchased-Credits")
         request.timeoutInterval = 30
 
         let encoder = JSONEncoder()
