@@ -7,6 +7,11 @@ struct PlanTab: View {
     @Query private var allGoals: [Goal]
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
 
+    // MARK: - Undo support
+    @State private var undoStep: Step?
+    @State private var undoPreviousStatus: StepStatus?
+    @State private var showUndoBanner = false
+
     private var currentWeekId: String { DateHelper.weekId() }
 
     private var weekSlots: [PlanSlot] {
@@ -93,7 +98,37 @@ struct PlanTab: View {
                 }
             }
             .navigationTitle("今週のプラン")
+            .overlay(alignment: .bottom) {
+                if showUndoBanner, let step = undoStep {
+                    undoBannerView(stepTitle: step.title)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
         }
+    }
+
+    // MARK: - Undo Banner
+
+    private func undoBannerView(stepTitle: String) -> some View {
+        HStack {
+            Image(systemName: "arrow.uturn.backward.circle.fill")
+                .foregroundStyle(.white)
+            Text("\(stepTitle) を変更しました")
+                .font(.subheadline)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+            Spacer()
+            Button("元に戻す") {
+                performUndo()
+            }
+            .font(.subheadline.bold())
+            .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(.systemGray2), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
     }
 
     private func removeFromPlan(slot: PlanSlot, step: Step) {
@@ -106,6 +141,10 @@ struct PlanTab: View {
     }
 
     private func markStep(_ step: Step, as newStatus: StepStatus) {
+        // Save previous state for undo
+        undoStep = step
+        undoPreviousStatus = step.status
+
         step.status = newStatus
         checkGoalCompletion(for: step)
         if calendarSyncEnabled {
@@ -117,6 +156,45 @@ struct PlanTab: View {
             default:
                 break
             }
+        }
+
+        // Show undo banner
+        withAnimation { showUndoBanner = true }
+        // Auto-dismiss after 5 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            withAnimation { showUndoBanner = false }
+        }
+    }
+
+    private func performUndo() {
+        guard let step = undoStep, let previousStatus = undoPreviousStatus else { return }
+        step.status = previousStatus
+        // Reverse calendar changes
+        if calendarSyncEnabled {
+            switch previousStatus {
+            case .scheduled:
+                // Re-add calendar event for restored scheduled step
+                CalendarService.addEvent(
+                    for: step.title,
+                    stepId: step.id,
+                    durationMin: step.durationMin,
+                    goalTitle: step.goal?.title
+                )
+            default:
+                break
+            }
+        }
+        // Reverse goal auto-completion if needed
+        if let goal = step.goal, goal.status == .completed {
+            let allDone = goal.steps.allSatisfy { $0.status == .done || $0.status == .discarded }
+            if !allDone {
+                goal.status = .active
+            }
+        }
+        withAnimation {
+            showUndoBanner = false
+            undoStep = nil
+            undoPreviousStatus = nil
         }
     }
 
