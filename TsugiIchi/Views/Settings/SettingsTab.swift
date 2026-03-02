@@ -4,6 +4,7 @@ import SwiftData
 struct SettingsTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
+    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
 
     @ObservedObject private var billing = BillingManager.shared
     @ObservedObject private var entitlements = EntitlementStore.shared
@@ -21,6 +22,9 @@ struct SettingsTab: View {
     @AppStorage("aiAutoRedact") private var aiAutoRedact = true
     @AppStorage("aiEndpointURL") private var aiEndpointURL = Constants.defaultAIProxyURL
     @AppStorage("aiAuthToken") private var aiAuthToken = Constants.defaultAIAuthToken
+
+    // MARK: - カレンダー連携
+    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
 
     // MARK: - エクスポート
     @State private var showExportSheet = false
@@ -194,6 +198,25 @@ struct SettingsTab: View {
                     Text("サブスクリプション")
                 }
 
+                // MARK: - カレンダー連携
+                Section {
+                    Toggle("カレンダー同期", isOn: $calendarSyncEnabled)
+                        .onChange(of: calendarSyncEnabled) { _, enabled in
+                            if enabled {
+                                Task {
+                                    let granted = await CalendarService.requestAccess()
+                                    if !granted {
+                                        calendarSyncEnabled = false
+                                    }
+                                }
+                            }
+                        }
+                } header: {
+                    Text("カレンダー連携")
+                } footer: {
+                    Text("有効にすると、今週枠に追加したStepがiPhoneのカレンダーアプリに自動で登録されます。")
+                }
+
                 // MARK: - データエクスポート
                 Section("データエクスポート") {
                     Button {
@@ -234,6 +257,7 @@ struct SettingsTab: View {
             .task {
                 await billing.loadProducts()
                 await entitlements.refresh()
+                await subscriptionManager.updateSubscriptionStatus()
             }
         }
     }

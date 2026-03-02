@@ -50,7 +50,13 @@ struct PaywallView: View {
                             icon: "calendar",
                             color: .green,
                             title: "カレンダー書き出し",
-                            subtitle: "Stepをカレンダーに同期（今後実装）"
+                            subtitle: "Stepをカレンダーに同期"
+                        )
+                        ProFeatureRow(
+                            icon: "infinity",
+                            color: .orange,
+                            title: "無制限のGoal",
+                            subtitle: "Free版は\(SubscriptionManager.freeGoalLimit)件まで"
                         )
                     }
                     .padding(.vertical, 8)
@@ -61,14 +67,11 @@ struct PaywallView: View {
                             .padding()
                     } else {
                         VStack(spacing: 12) {
-                            // Pro monthly subscription
                             if let pro = billing.proProduct {
                                 ProductButton(product: pro, label: "Pro（月額）") {
                                     Task { await billing.purchase(pro) }
                                 }
                             }
-
-                            // AI pack (consumable)
                             if let pack = billing.packProduct {
                                 ProductButton(product: pack, label: "AI追加パック (+300回)") {
                                     Task { await billing.purchase(pack) }
@@ -160,7 +163,6 @@ struct PaywallView: View {
                 }
             }
 
-            // Breakdown
             HStack(spacing: 16) {
                 Label("月次枠: \(credits.monthlyRemaining)/\(credits.monthlyLimit)",
                       systemImage: "calendar.circle")

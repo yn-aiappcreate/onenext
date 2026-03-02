@@ -5,6 +5,7 @@ struct PlanTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allSlots: [PlanSlot]
     @Query private var allGoals: [Goal]
+    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
 
     private var currentWeekId: String { DateHelper.weekId() }
 
@@ -99,11 +100,24 @@ struct PlanTab: View {
         step.status = .pending
         step.scheduledAt = nil
         modelContext.delete(slot)
+        if calendarSyncEnabled {
+            CalendarService.removeEvent(for: step.id)
+        }
     }
 
     private func markStep(_ step: Step, as newStatus: StepStatus) {
         step.status = newStatus
         checkGoalCompletion(for: step)
+        if calendarSyncEnabled {
+            switch newStatus {
+            case .done:
+                CalendarService.markEventDone(for: step.id)
+            case .postponed, .discarded:
+                CalendarService.removeEvent(for: step.id)
+            default:
+                break
+            }
+        }
     }
 
     /// 全Step完了時にGoalを自動完了

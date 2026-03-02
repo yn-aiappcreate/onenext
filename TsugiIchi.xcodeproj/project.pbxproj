@@ -37,6 +37,8 @@
 		7018FAF9EADB5B61A834DD2D /* CreditsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4408D9BE01285A6B93271FC4 /* CreditsStore.swift */; };
 		CA773EE9F11F509FAB5FF90F /* ClientId.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1564DBE9558B5C5A8911336D /* ClientId.swift */; };
 		C5B893AFBC6B50B59F0871B5 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55B138D76D95CEA99F876F2 /* PaywallView.swift */; };
+		D98DB7EF92E7519D996B29AC /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600BF6E0B62F5CA5871E98E1 /* CalendarService.swift */; };
+		33BBA98D75ED5430A75F4890 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6132823D3985273826AE748 /* SubscriptionManager.swift */; };
 		DD53EF76402353E299C64529 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 7594481928345897843B10D8 /* Localizable.xcstrings */; };
 		D51A5EDD3CFE593AA4A33CBA /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */; };
 		4D7427777CA25DE8AA0B0AEF /* TemplateEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6008C347D80505980DB8174 /* TemplateEngineTests.swift */; };
@@ -82,6 +84,8 @@
 		4408D9BE01285A6B93271FC4 /* CreditsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsStore.swift; sourceTree = "<group>"; };
 		1564DBE9558B5C5A8911336D /* ClientId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientId.swift; sourceTree = "<group>"; };
 		B55B138D76D95CEA99F876F2 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		600BF6E0B62F5CA5871E98E1 /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
+		C6132823D3985273826AE748 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
 		7594481928345897843B10D8 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		D47B0EDEE3175ED1AEFB10AE /* DateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelper.swift; sourceTree = "<group>"; };
 		D5717457275C5239BF1D81EF /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -249,6 +253,8 @@
 				26ECCC1058A152A7A68BFFBD /* BillingManager.swift */,
 				C629976CDB3F5063BC38A7E8 /* EntitlementStore.swift */,
 				4408D9BE01285A6B93271FC4 /* CreditsStore.swift */,
+				600BF6E0B62F5CA5871E98E1 /* CalendarService.swift */,
+				C6132823D3985273826AE748 /* SubscriptionManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -378,6 +384,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C6DD360D988859EEA8484941 /* Assets.xcassets in Resources */,
+				DD53EF76402353E299C64529 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -424,6 +431,8 @@
 				7018FAF9EADB5B61A834DD2D /* CreditsStore.swift in Sources */,
 				CA773EE9F11F509FAB5FF90F /* ClientId.swift in Sources */,
 				C5B893AFBC6B50B59F0871B5 /* PaywallView.swift in Sources */,
+				D98DB7EF92E7519D996B29AC /* CalendarService.swift in Sources */,
+				33BBA98D75ED5430A75F4890 /* SubscriptionManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -584,6 +593,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "\U30c4\U30ae\U30a4\U30c1\U306f\U3001\U30d7\U30e9\U30f3\U306e\U30b9\U30c6\U30c3\U30d7\U3092\U30ab\U30ec\U30f3\U30c0\U30fc\U306b\U540c\U671f\U3059\U308b\U305f\U3081\U306b\U30ab\U30ec\U30f3\U30c0\U30fc\U3078\U306e\U30a2\U30af\U30bb\U30b9\U304c\U5fc5\U8981\U3067\U3059\U3002";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
@@ -614,6 +624,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "\U30c4\U30ae\U30a4\U30c1\U306f\U3001\U30d7\U30e9\U30f3\U306e\U30b9\U30c6\U30c3\U30d7\U3092\U30ab\U30ec\U30f3\U30c0\U30fc\U306b\U540c\U671f\U3059\U308b\U305f\U3081\U306b\U30ab\U30ec\U30f3\U30c0\U30fc\U3078\U306e\U30a2\U30af\U30bb\U30b9\U304c\U5fc5\U8981\U3067\U3059\U3002";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi;
 				"PRODUCT_NAME" = "$(TARGET_NAME)";

@@ -19,6 +19,7 @@ for key in [
     "fr_ai_consent_view", "fr_ai_step_sheet",
     "fr_billing_manager", "fr_entitlement_store", "fr_credits_store",
     "fr_client_id", "fr_paywall_view",
+    "fr_calendar_service", "fr_subscription_manager",
     "fr_localizable_xcstrings",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
@@ -38,6 +39,7 @@ for key in [
     "bf_ai_consent_view", "bf_ai_step_sheet",
     "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
     "bf_client_id", "bf_paywall_view",
+    "bf_calendar_service", "bf_subscription_manager",
     "bf_localizable_xcstrings",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
@@ -92,6 +94,8 @@ bf_to_fr = {
     "bf_credits_store": ("fr_credits_store", "CreditsStore.swift"),
     "bf_client_id": ("fr_client_id", "ClientId.swift"),
     "bf_paywall_view": ("fr_paywall_view", "PaywallView.swift"),
+    "bf_calendar_service": ("fr_calendar_service", "CalendarService.swift"),
+    "bf_subscription_manager": ("fr_subscription_manager", "SubscriptionManager.swift"),
     "bf_localizable_xcstrings": ("fr_localizable_xcstrings", "Localizable.xcstrings"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
@@ -109,6 +113,7 @@ app_sources = [
     "bf_ai_consent_view", "bf_ai_step_sheet",
     "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
     "bf_client_id", "bf_paywall_view",
+    "bf_calendar_service", "bf_subscription_manager",
 ]
 app_resources = ["bf_assets", "bf_localizable_xcstrings"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
@@ -181,6 +186,8 @@ fr_info = [
     ("fr_credits_store", "lastKnownFileType = sourcecode.swift", "CreditsStore.swift", '"<group>"'),
     ("fr_client_id", "lastKnownFileType = sourcecode.swift", "ClientId.swift", '"<group>"'),
     ("fr_paywall_view", "lastKnownFileType = sourcecode.swift", "PaywallView.swift", '"<group>"'),
+    ("fr_calendar_service", "lastKnownFileType = sourcecode.swift", "CalendarService.swift", '"<group>"'),
+    ("fr_subscription_manager", "lastKnownFileType = sourcecode.swift", "SubscriptionManager.swift", '"<group>"'),
     ("fr_localizable_xcstrings", "lastKnownFileType = text.json.xcstrings", "Localizable.xcstrings", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
@@ -314,6 +321,8 @@ write_group("gr_services", "Services", [
     ("fr_billing_manager", "BillingManager.swift"),
     ("fr_entitlement_store", "EntitlementStore.swift"),
     ("fr_credits_store", "CreditsStore.swift"),
+    ("fr_calendar_service", "CalendarService.swift"),
+    ("fr_subscription_manager", "SubscriptionManager.swift"),
 ], path="Services")
 
 write_group("gr_utilities", "Utilities", [
@@ -431,7 +440,9 @@ w(f"\t\t{I('bp_app_resources')} /* Resources */ = {{")
 w(f"\t\t\tisa = PBXResourcesBuildPhase;")
 w(f"\t\t\tbuildActionMask = 2147483647;")
 w(f"\t\t\tfiles = (")
-w(f"\t\t\t\t{I('bf_assets')} /* Assets.xcassets in Resources */,")
+for bf in app_resources:
+    _, name = bf_to_fr[bf]
+    w(f"\t\t\t\t{I(bf)} /* {name} in Resources */,")
 w(f"\t\t\t);")
 w(f"\t\t\trunOnlyForDeploymentPostprocessing = 0;")
 w(f"\t\t}};")
@@ -585,6 +596,7 @@ app_settings = [
     "INFOPLIST_KEY_UILaunchScreen_Generation = YES;",
     '"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";',
     '"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";',
+    'INFOPLIST_KEY_NSCalendarsUsageDescription = "\\U30c4\\U30ae\\U30a4\\U30c1\\U306f\\U3001\\U30d7\\U30e9\\U30f3\\U306e\\U30b9\\U30c6\\U30c3\\U30d7\\U3092\\U30ab\\U30ec\\U30f3\\U30c0\\U30fc\\U306b\\U540c\\U671f\\U3059\\U308b\\U305f\\U3081\\U306b\\U30ab\\U30ec\\U30f3\\U30c0\\U30fc\\U3078\\U306e\\U30a2\\U30af\\U30bb\\U30b9\\U304c\\U5fc5\\U8981\\U3067\\U3059\\U3002";',
     "MARKETING_VERSION = 1.0;",
     "PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi;",
     '"PRODUCT_NAME" = "$(TARGET_NAME)";',
