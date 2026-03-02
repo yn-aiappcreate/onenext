@@ -10,6 +10,13 @@ struct SettingsTab: View {
     @AppStorage("notificationHour") private var notificationHour: Int = 20
     @AppStorage("notificationMinute") private var notificationMinute: Int = 0
 
+    // MARK: - AIアシスト
+    @AppStorage("aiAssistEnabled") private var aiAssistEnabled = true
+    @AppStorage("aiConsentGiven") private var aiConsentGiven = false
+    @AppStorage("aiConfirmBeforeSend") private var aiConfirmBeforeSend = true
+    @AppStorage("aiAutoRedact") private var aiAutoRedact = true
+    @AppStorage("aiEndpointURL") private var aiEndpointURL = Constants.defaultAIProxyURL
+
     // MARK: - エクスポート
     @State private var showExportSheet = false
     @State private var exportCSV: String = ""
@@ -51,6 +58,50 @@ struct SettingsTab: View {
                     Text("週次レビュー通知")
                 } footer: {
                     Text("毎週\(weekdayNames[notificationWeekday - 1]) \(notificationHour):\(String(format: "%02d", notificationMinute))に通知されます")
+                }
+
+                // MARK: - AIアシスト
+                Section {
+                    Toggle("AIアシストを有効にする", isOn: $aiAssistEnabled)
+
+                    if aiAssistEnabled {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("エンドポイントURL（Proxy）")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("https://your-proxy.example.com", text: $aiEndpointURL)
+                                .font(.system(.body, design: .monospaced))
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .keyboardType(.URL)
+                        }
+
+                        Toggle("送信前に毎回確認", isOn: $aiConfirmBeforeSend)
+
+                        Toggle("個人情報を自動マスク", isOn: $aiAutoRedact)
+
+                        LabeledContent("プロバイダ", value: "自前Proxy経由")
+
+                        if aiConsentGiven {
+                            Button(role: .destructive) {
+                                aiConsentGiven = false
+                            } label: {
+                                Label("AI利用の同意をリセット", systemImage: "arrow.counterclockwise")
+                            }
+                        } else {
+                            HStack {
+                                Image(systemName: "info.circle")
+                                    .foregroundStyle(.secondary)
+                                Text("初回利用時に同意画面が表示されます")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("AIアシスト")
+                } footer: {
+                    Text("AIステップ生成には、自前のプロキシサーバーが必要です。APIキーはアプリに埋め込まれていません。")
                 }
 
                 // MARK: - データエクスポート
