@@ -34,6 +34,7 @@ final class Step {
 enum StepType: String, Codable {
     case auto
     case manual
+    case ai
 }
 
 enum StepStatus: String, Codable {
