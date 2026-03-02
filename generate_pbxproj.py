@@ -21,6 +21,7 @@ for key in [
     "fr_client_id", "fr_paywall_view",
     "fr_calendar_service", "fr_subscription_manager",
     "fr_localizable_xcstrings",
+    "fr_dashboard_tab", "fr_goal_share_sheet", "fr_widget_data_provider",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
 ]:
@@ -41,6 +42,7 @@ for key in [
     "bf_client_id", "bf_paywall_view",
     "bf_calendar_service", "bf_subscription_manager",
     "bf_localizable_xcstrings",
+    "bf_dashboard_tab", "bf_goal_share_sheet", "bf_widget_data_provider",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
     ids[key] = make_id(key)
@@ -51,7 +53,7 @@ for key in [
     "gr_backlog", "gr_plan", "gr_review", "gr_settings", "gr_components",
     "gr_services", "gr_utilities", "gr_preview", "gr_tests", "gr_products",
     "gr_onboarding",
-    "gr_ai", "gr_resources",
+    "gr_ai", "gr_dashboard", "gr_resources",
     "tg_app", "tg_tests",
     "bp_app_sources", "bp_app_frameworks", "bp_app_resources",
     "bp_tests_sources", "bp_tests_frameworks", "bp_tests_resources",
@@ -97,6 +99,9 @@ bf_to_fr = {
     "bf_calendar_service": ("fr_calendar_service", "CalendarService.swift"),
     "bf_subscription_manager": ("fr_subscription_manager", "SubscriptionManager.swift"),
     "bf_localizable_xcstrings": ("fr_localizable_xcstrings", "Localizable.xcstrings"),
+    "bf_dashboard_tab": ("fr_dashboard_tab", "DashboardTab.swift"),
+    "bf_goal_share_sheet": ("fr_goal_share_sheet", "GoalShareSheet.swift"),
+    "bf_widget_data_provider": ("fr_widget_data_provider", "WidgetDataProvider.swift"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
     "bf_datehelper_tests": ("fr_datehelper_tests", "DateHelperTests.swift"),
@@ -114,6 +119,7 @@ app_sources = [
     "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
     "bf_client_id", "bf_paywall_view",
     "bf_calendar_service", "bf_subscription_manager",
+    "bf_dashboard_tab", "bf_goal_share_sheet", "bf_widget_data_provider",
 ]
 app_resources = ["bf_assets", "bf_localizable_xcstrings"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
@@ -189,6 +195,9 @@ fr_info = [
     ("fr_calendar_service", "lastKnownFileType = sourcecode.swift", "CalendarService.swift", '"<group>"'),
     ("fr_subscription_manager", "lastKnownFileType = sourcecode.swift", "SubscriptionManager.swift", '"<group>"'),
     ("fr_localizable_xcstrings", "lastKnownFileType = text.json.xcstrings", "Localizable.xcstrings", '"<group>"'),
+    ("fr_dashboard_tab", "lastKnownFileType = sourcecode.swift", "DashboardTab.swift", '"<group>"'),
+    ("fr_goal_share_sheet", "lastKnownFileType = sourcecode.swift", "GoalShareSheet.swift", '"<group>"'),
+    ("fr_widget_data_provider", "lastKnownFileType = sourcecode.swift", "WidgetDataProvider.swift", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
     ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
@@ -280,6 +289,7 @@ write_group("gr_views", "Views", [
     ("gr_components", "Components"),
     ("gr_onboarding", "Onboarding"),
     ("gr_ai", "AI"),
+    ("gr_dashboard", "Dashboard"),
 ], path="Views")
 
 write_group("gr_backlog", "Backlog", [
@@ -290,6 +300,7 @@ write_group("gr_backlog", "Backlog", [
 
 write_group("gr_components", "Components", [
     ("fr_empty_state", "EmptyStateView.swift"),
+    ("fr_goal_share_sheet", "GoalShareSheet.swift"),
 ], path="Components")
 
 for grp, fr, fname, path in [
@@ -312,6 +323,10 @@ write_group("gr_ai", "AI", [
     ("fr_ai_step_sheet", "AIStepSheet.swift"),
 ], path="AI")
 
+write_group("gr_dashboard", "Dashboard", [
+    ("fr_dashboard_tab", "DashboardTab.swift"),
+], path="Dashboard")
+
 write_group("gr_services", "Services", [
     ("fr_template_engine", "TemplateEngine.swift"),
     ("fr_notification_manager", "NotificationManager.swift"),
@@ -323,6 +338,7 @@ write_group("gr_services", "Services", [
     ("fr_credits_store", "CreditsStore.swift"),
     ("fr_calendar_service", "CalendarService.swift"),
     ("fr_subscription_manager", "SubscriptionManager.swift"),
+    ("fr_widget_data_provider", "WidgetDataProvider.swift"),
 ], path="Services")
 
 write_group("gr_utilities", "Utilities", [

@@ -10,6 +10,7 @@ struct GoalDetailView: View {
     @State private var showRegenerateConfirm = false
     @State private var showAddStepSheet = false
     @State private var showAIStepSheet = false
+    @State private var showShareSheet = false
 
     @AppStorage("aiAssistEnabled") private var aiAssistEnabled = true
 
@@ -78,6 +79,15 @@ struct GoalDetailView: View {
                             Text("Goal達成！")
                                 .foregroundStyle(.green)
                                 .fontWeight(.semibold)
+                            Spacer()
+                            Button {
+                                showShareSheet = true
+                            } label: {
+                                Label("シェア", systemImage: "square.and.arrow.up")
+                                    .font(.subheadline)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
                     }
                 }
@@ -181,6 +191,9 @@ struct GoalDetailView: View {
         }
         .sheet(isPresented: $showAIStepSheet) {
             AIStepSheet(goal: goal)
+        }
+        .sheet(isPresented: $showShareSheet) {
+            GoalShareSheet(goal: goal)
         }
     }
 
