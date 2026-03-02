@@ -44,199 +44,12 @@ struct SettingsTab: View {
     var body: some View {
         NavigationStack {
             List {
-                // MARK: - 通知
-                Section {
-                    Picker("曜日", selection: $notificationWeekday) {
-                        ForEach(Array(zip(weekdayValues, weekdayNames)), id: \.0) { value, name in
-                            Text(name).tag(value)
-                        }
-                    }
-
-                    HStack {
-                        Text("時刻")
-                        Spacer()
-                        Picker("時", selection: $notificationHour) {
-                            ForEach(0..<24, id: \.self) { h in
-                                Text("\(h)時").tag(h)
-                            }
-                        }
-                        .pickerStyle(.menu)
-
-                        Picker("分", selection: $notificationMinute) {
-                            ForEach([0, 15, 30, 45], id: \.self) { m in
-                                Text("\(String(format: "%02d", m))\(String(localized: "分"))").tag(m)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                    }
-                } header: {
-                    Text("週次レビュー通知")
-                } footer: {
-                    Text("毎週\(weekdayNames[notificationWeekday - 1]) \(notificationHour):\(String(format: "%02d", notificationMinute))に通知されます")
-                }
-
-                // MARK: - AIアシスト
-                Section {
-                    Toggle("AIアシストを有効にする", isOn: $aiAssistEnabled)
-
-                    if aiAssistEnabled {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("エンドポイントURL（Proxy）")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            TextField("https://your-proxy.example.com", text: $aiEndpointURL)
-                                .font(.system(.body, design: .monospaced))
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .keyboardType(.URL)
-                        }
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("認証トークン（任意）")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            SecureField("Bearer token", text: $aiAuthToken)
-                                .font(.system(.body, design: .monospaced))
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                        }
-
-                        Toggle("送信前に毎回確認", isOn: $aiConfirmBeforeSend)
-
-                        Toggle("個人情報を自動マスク", isOn: $aiAutoRedact)
-
-                        LabeledContent("プロバイダ", value: "自前Proxy経由")
-
-                        if aiConsentGiven {
-                            Button(role: .destructive) {
-                                aiConsentGiven = false
-                            } label: {
-                                Label("AI利用の同意をリセット", systemImage: "arrow.counterclockwise")
-                            }
-                        } else {
-                            HStack {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(.secondary)
-                                Text("初回利用時に同意画面が表示されます")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                } header: {
-                    Text("AIアシスト")
-                } footer: {
-                    Text("AIステップ生成には、自前のプロキシサーバーが必要です。APIキーはアプリに埋め込まれていません。")
-                }
-
-                // MARK: - サブスクリプション / クレジット
-                Section {
-                    // Pro status
-                    HStack {
-                        Image(systemName: entitlements.isPro ? "star.circle.fill" : "star.circle")
-                            .foregroundStyle(entitlements.isPro ? .yellow : .secondary)
-                        Text(entitlements.isPro ? "Pro プラン利用中" : "Free プラン")
-                            .fontWeight(.semibold)
-                        Spacer()
-                        if !entitlements.isPro {
-                            Button("アップグレード") {
-                                showPaywall = true
-                            }
-                            .font(.caption)
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.small)
-                        }
-                    }
-
-                    // Credits display
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text("AI残クレジット")
-                                .font(.subheadline)
-                            Spacer()
-                            Text("\(credits.totalRemaining)回")
-                                .font(.headline)
-                                .foregroundStyle(credits.totalRemaining > 0 ? .primary : .red)
-                        }
-                        HStack(spacing: 16) {
-                            Label("月次枠: \(credits.monthlyRemaining)/\(credits.monthlyLimit)",
-                                  systemImage: "calendar.circle")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            if credits.purchasedCredits > 0 {
-                                Label("購入枠: \(credits.purchasedCredits)",
-                                      systemImage: "bag.circle")
-                                    .font(.caption)
-                                    .foregroundStyle(.blue)
-                            }
-                        }
-                    }
-
-                    // Purchase pack
-                    if !billing.products.isEmpty {
-                        Button {
-                            showPaywall = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "bag.badge.plus")
-                                    .foregroundStyle(.blue)
-                                Text("AI追加パックを購入")
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-
-                    // Restore purchases
-                    Button("購入を復元") {
-                        Task { await billing.restorePurchases() }
-                    }
-                    .font(.footnote)
-                } header: {
-                    Text("サブスクリプション")
-                }
-
-                // MARK: - カレンダー連携
-                Section {
-                    Toggle("カレンダー同期", isOn: $calendarSyncEnabled)
-                        .onChange(of: calendarSyncEnabled) { _, enabled in
-                            if enabled {
-                                Task {
-                                    let granted = await CalendarService.requestAccess()
-                                    if !granted {
-                                        calendarSyncEnabled = false
-                                    }
-                                }
-                            }
-                        }
-                } header: {
-                    Text("カレンダー連携")
-                } footer: {
-                    Text("有効にすると、今週枠に追加したStepがiPhoneのカレンダーアプリに自動で登録されます。")
-                }
-
-                // MARK: - データエクスポート
-                Section("データエクスポート") {
-                    Button {
-                        exportGoalsCSV()
-                    } label: {
-                        Label("Goal一覧をCSVエクスポート", systemImage: "square.and.arrow.up")
-                    }
-
-                    Button {
-                        exportStepsCSV()
-                    } label: {
-                        Label("Step一覧をCSVエクスポート", systemImage: "square.and.arrow.up")
-                    }
-                }
-
-                // MARK: - アプリ情報
-                Section("アプリ情報") {
-                    LabeledContent("バージョン", value: "1.0")
-                    LabeledContent("ビルド", value: "1")
-                }
+                notificationSection
+                aiAssistSection
+                subscriptionSection
+                calendarSection
+                exportSection
+                appInfoSection
             }
             .navigationTitle("設定")
             .onChange(of: notificationWeekday) { _, _ in
@@ -259,6 +72,214 @@ struct SettingsTab: View {
                 await entitlements.refresh()
                 await subscriptionManager.updateSubscriptionStatus()
             }
+        }
+    }
+
+    // MARK: - 通知セクション
+
+    private var notificationSection: some View {
+        Section {
+            Picker("曜日", selection: $notificationWeekday) {
+                ForEach(Array(zip(weekdayValues, weekdayNames)), id: \.0) { value, name in
+                    Text(name).tag(value)
+                }
+            }
+
+            HStack {
+                Text("時刻")
+                Spacer()
+                Picker("時", selection: $notificationHour) {
+                    ForEach(0..<24, id: \.self) { h in
+                        Text("\(h)時").tag(h)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Picker("分", selection: $notificationMinute) {
+                    ForEach([0, 15, 30, 45], id: \.self) { m in
+                        Text("\(String(format: "%02d", m))\(String(localized: "分"))").tag(m)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+        } header: {
+            Text("週次レビュー通知")
+        } footer: {
+            Text("毎週\(weekdayNames[notificationWeekday - 1]) \(notificationHour):\(String(format: "%02d", notificationMinute))に通知されます")
+        }
+    }
+
+    // MARK: - AIアシストセクション
+
+    private var aiAssistSection: some View {
+        Section {
+            Toggle("AIアシストを有効にする", isOn: $aiAssistEnabled)
+
+            if aiAssistEnabled {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("エンドポイントURL（Proxy）")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("https://your-proxy.example.com", text: $aiEndpointURL)
+                        .font(.system(.body, design: .monospaced))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("認証トークン（任意）")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    SecureField("Bearer token", text: $aiAuthToken)
+                        .font(.system(.body, design: .monospaced))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+
+                Toggle("送信前に毎回確認", isOn: $aiConfirmBeforeSend)
+
+                Toggle("個人情報を自動マスク", isOn: $aiAutoRedact)
+
+                LabeledContent("プロバイダ", value: "自前Proxy経由")
+
+                if aiConsentGiven {
+                    Button(role: .destructive) {
+                        aiConsentGiven = false
+                    } label: {
+                        Label("AI利用の同意をリセット", systemImage: "arrow.counterclockwise")
+                    }
+                } else {
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(.secondary)
+                        Text("初回利用時に同意画面が表示されます")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        } header: {
+            Text("AIアシスト")
+        } footer: {
+            Text("AIステップ生成には、自前のプロキシサーバーが必要です。APIキーはアプリに埋め込まれていません。")
+        }
+    }
+
+    // MARK: - サブスクリプションセクション
+
+    private var subscriptionSection: some View {
+        Section {
+            HStack {
+                Image(systemName: entitlements.isPro ? "star.circle.fill" : "star.circle")
+                    .foregroundStyle(entitlements.isPro ? Color.yellow : Color.secondary)
+                Text(entitlements.isPro ? "Pro プラン利用中" : "Free プラン")
+                    .fontWeight(.semibold)
+                Spacer()
+                if !entitlements.isPro {
+                    Button("アップグレード") {
+                        showPaywall = true
+                    }
+                    .font(.caption)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("AI残クレジット")
+                        .font(.subheadline)
+                    Spacer()
+                    Text("\(credits.totalRemaining)回")
+                        .font(.headline)
+                        .foregroundStyle(credits.totalRemaining > 0 ? Color.primary : Color.red)
+                }
+                HStack(spacing: 16) {
+                    Label("月次枠: \(credits.monthlyRemaining)/\(credits.monthlyLimit)",
+                          systemImage: "calendar.circle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if credits.purchasedCredits > 0 {
+                        Label("購入枠: \(credits.purchasedCredits)",
+                              systemImage: "bag.circle")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
+            }
+
+            if !billing.products.isEmpty {
+                Button {
+                    showPaywall = true
+                } label: {
+                    HStack {
+                        Image(systemName: "bag.badge.plus")
+                            .foregroundStyle(.blue)
+                        Text("AI追加パックを購入")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            Button("購入を復元") {
+                Task { await billing.restorePurchases() }
+            }
+            .font(.footnote)
+        } header: {
+            Text("サブスクリプション")
+        }
+    }
+
+    // MARK: - カレンダーセクション
+
+    private var calendarSection: some View {
+        Section {
+            Toggle("カレンダー同期", isOn: $calendarSyncEnabled)
+                .onChange(of: calendarSyncEnabled) { _, enabled in
+                    if enabled {
+                        Task {
+                            let granted = await CalendarService.requestAccess()
+                            if !granted {
+                                calendarSyncEnabled = false
+                            }
+                        }
+                    }
+                }
+        } header: {
+            Text("カレンダー連携")
+        } footer: {
+            Text("有効にすると、今週枠に追加したStepがiPhoneのカレンダーアプリに自動で登録されます。")
+        }
+    }
+
+    // MARK: - エクスポートセクション
+
+    private var exportSection: some View {
+        Section("データエクスポート") {
+            Button {
+                exportGoalsCSV()
+            } label: {
+                Label("Goal一覧をCSVエクスポート", systemImage: "square.and.arrow.up")
+            }
+
+            Button {
+                exportStepsCSV()
+            } label: {
+                Label("Step一覧をCSVエクスポート", systemImage: "square.and.arrow.up")
+            }
+        }
+    }
+
+    // MARK: - アプリ情報セクション
+
+    private var appInfoSection: some View {
+        Section("アプリ情報") {
+            LabeledContent("バージョン", value: "1.0")
+            LabeledContent("ビルド", value: "1")
         }
     }
 
