@@ -75,7 +75,7 @@ enum CalendarService {
     // MARK: - Events
 
     /// Add a calendar event for a step that was scheduled to the weekly plan.
-    /// The event is placed on the current date by default (since steps don't have specific times).
+    /// The event is placed at the user's preferred hour (nearest future occurrence).
     @discardableResult
     static func addEvent(for stepTitle: String, stepId: UUID, durationMin: Int, goalTitle: String?) -> String? {
         guard isAuthorized, let calendar = getOrCreateCalendar() else { return nil }
@@ -84,8 +84,8 @@ enum CalendarService {
         event.title = stepTitle
         event.calendar = calendar
 
-        // Default to an all-day event today, or a timed event starting now
-        let start = Date()
+        // Use the user's preferred hour for calendar events
+        let start = nextPreferredDate()
         event.startDate = start
         event.endDate = start.addingTimeInterval(Double(durationMin) * 60)
         event.isAllDay = false
@@ -136,6 +136,32 @@ enum CalendarService {
         } catch {
             print("[CalendarService] Failed to update event: \(error)")
         }
+    }
+
+    // MARK: - Preferred time helper
+
+    /// Calculate the nearest future occurrence of the user's preferred hour.
+    /// For example, if preferred hour is 20 and current time is 21:00, returns tomorrow 20:00.
+    /// If current time is 15:00, returns today 20:00.
+    static func nextPreferredDate() -> Date {
+        let preferredHour = UserDefaults.standard.integer(forKey: "calendarPreferredHour")
+        // Default to 20 if not set (0 is also valid, so check if key exists)
+        let hour = UserDefaults.standard.object(forKey: "calendarPreferredHour") != nil ? preferredHour : 20
+
+        let now = Date()
+        let cal = Calendar.current
+        var components = cal.dateComponents([.year, .month, .day], from: now)
+        components.hour = hour
+        components.minute = 0
+        components.second = 0
+
+        // Try today first
+        if let candidate = cal.date(from: components), candidate > now {
+            return candidate
+        }
+        // Otherwise use tomorrow
+        components.day = (components.day ?? 0) + 1
+        return cal.date(from: components) ?? now
     }
 
     // MARK: - Persistence helpers (stepId <-> eventIdentifier)

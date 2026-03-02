@@ -25,6 +25,7 @@ struct SettingsTab: View {
 
     // MARK: - カレンダー連携
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
+    @AppStorage("calendarPreferredHour") private var calendarPreferredHour: Int = 20
 
     // MARK: - エクスポート
     @State private var showExportSheet = false
@@ -116,32 +117,45 @@ struct SettingsTab: View {
             Toggle("AIアシストを有効にする", isOn: $aiAssistEnabled)
 
             if aiAssistEnabled {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("エンドポイントURL（Proxy）")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    TextField("https://your-proxy.example.com", text: $aiEndpointURL)
-                        .font(.system(.body, design: .monospaced))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .keyboardType(.URL)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("認証トークン（任意）")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    SecureField("Bearer token", text: $aiAuthToken)
-                        .font(.system(.body, design: .monospaced))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                // Connection status indicator
+                HStack {
+                    Image(systemName: aiEndpointURL != Constants.defaultAIProxyURL && !aiEndpointURL.isEmpty
+                          ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                        .foregroundStyle(aiEndpointURL != Constants.defaultAIProxyURL && !aiEndpointURL.isEmpty
+                                         ? Color.green : Color.orange)
+                    Text(aiEndpointURL != Constants.defaultAIProxyURL && !aiEndpointURL.isEmpty
+                         ? "Proxy接続済み" : "Proxyが未設定です")
+                        .font(.subheadline)
                 }
 
                 Toggle("送信前に毎回確認", isOn: $aiConfirmBeforeSend)
 
                 Toggle("個人情報を自動マスク", isOn: $aiAutoRedact)
 
-                LabeledContent("プロバイダ", value: "自前Proxy経由")
+                DisclosureGroup("詳細設定") {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("エンドポイントURL（Proxy）")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField("https://your-proxy.example.com", text: $aiEndpointURL)
+                            .font(.system(.body, design: .monospaced))
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.URL)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("認証トークン（任意）")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        SecureField("Bearer token", text: $aiAuthToken)
+                            .font(.system(.body, design: .monospaced))
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                    }
+
+                    LabeledContent("プロバイダ", value: "自前Proxy経由")
+                }
 
                 if aiConsentGiven {
                     Button(role: .destructive) {
@@ -162,7 +176,7 @@ struct SettingsTab: View {
         } header: {
             Text("AIアシスト")
         } footer: {
-            Text("AIステップ生成には、自前のプロキシサーバーが必要です。APIキーはアプリに埋め込まれていません。")
+            Text("設定はこのデバイスにのみ保存されます。他のユーザーに表示されることはありません。")
         }
     }
 
@@ -249,10 +263,20 @@ struct SettingsTab: View {
                         }
                     }
                 }
+
+            if calendarSyncEnabled {
+                Picker("予定を入れる時刻", selection: $calendarPreferredHour) {
+                    ForEach(0..<24, id: \.self) { h in
+                        Text("\(h)時").tag(h)
+                    }
+                }
+            }
         } header: {
             Text("カレンダー連携")
         } footer: {
-            Text("有効にすると、今週枠に追加したStepがiPhoneのカレンダーアプリに自動で登録されます。")
+            Text(calendarSyncEnabled
+                 ? "Stepをカレンダーに追加すると、現在時刻から一番近い未来の\(calendarPreferredHour)時に予定が入ります。"
+                 : "有効にすると、今週枠に追加したStepがiPhoneのカレンダーアプリに自動で登録されます。")
         }
     }
 

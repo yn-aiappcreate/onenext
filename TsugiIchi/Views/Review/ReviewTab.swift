@@ -11,6 +11,11 @@ struct ReviewTab: View {
     @State private var showAutoPlaceConfirm = false
     @State private var selectedGoal: Goal?
 
+    // MARK: - Undo support
+    @State private var undoStep: Step?
+    @State private var undoPreviousStatus: StepStatus?
+    @State private var showUndoBanner = false
+
     private var currentWeekId: String { DateHelper.weekId() }
 
     /// 今週のスケジュール済みで未完了のStep
@@ -265,6 +270,12 @@ struct ReviewTab: View {
                     selectedGoal: $selectedGoal
                 )
             }
+            .overlay(alignment: .bottom) {
+                if showUndoBanner, let step = undoStep {
+                    undoBannerView(stepTitle: step.title)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
             .alert(
                 "Stepを今週枠に配置",
                 isPresented: $showAutoPlaceConfirm
@@ -308,10 +319,62 @@ struct ReviewTab: View {
         }
     }
 
+    // MARK: - Undo Banner
+
+    private func undoBannerView(stepTitle: String) -> some View {
+        HStack {
+            Image(systemName: "arrow.uturn.backward.circle.fill")
+                .foregroundStyle(.white)
+            Text("\(stepTitle) を変更しました")
+                .font(.subheadline)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+            Spacer()
+            Button("元に戻す") {
+                performUndo()
+            }
+            .font(.subheadline.bold())
+            .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(.systemGray2), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+    }
+
     /// ステップのステータスを変更
     private func markStep(_ step: Step, as newStatus: StepStatus) {
+        // Save previous state for undo
+        undoStep = step
+        undoPreviousStatus = step.status
+
         step.status = newStatus
         checkGoalCompletion(for: step)
+
+        // Show undo banner
+        withAnimation { showUndoBanner = true }
+        // Auto-dismiss after 5 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            withAnimation { showUndoBanner = false }
+        }
+    }
+
+    private func performUndo() {
+        guard let step = undoStep, let previousStatus = undoPreviousStatus else { return }
+        step.status = previousStatus
+        // Reverse goal auto-completion if needed
+        if let goal = step.goal, goal.status == .completed {
+            let allDone = goal.steps.allSatisfy { $0.status == .done || $0.status == .discarded }
+            if !allDone {
+                goal.status = .active
+            }
+        }
+        withAnimation {
+            showUndoBanner = false
+            undoStep = nil
+            undoPreviousStatus = nil
+        }
     }
 
     /// 延期Stepを今週枠に再配置
