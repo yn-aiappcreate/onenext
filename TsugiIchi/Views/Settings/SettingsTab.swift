@@ -268,6 +268,18 @@ struct SettingsTab: View {
         Section("アプリ情報") {
             LabeledContent("バージョン", value: "1.0")
             LabeledContent("ビルド", value: "1")
+
+            Link(destination: URL(string: "https://yn-aiappcreate.github.io/onenext/Docs/legal/privacy-policy.html")!) {
+                Label("プライバシーポリシー", systemImage: "hand.raised")
+            }
+
+            Link(destination: URL(string: "https://yn-aiappcreate.github.io/onenext/Docs/legal/terms-of-service.html")!) {
+                Label("利用規約", systemImage: "doc.text")
+            }
+
+            Link(destination: URL(string: "https://yn-aiappcreate.github.io/onenext/Docs/legal/support.html")!) {
+                Label("サポート・お問い合わせ", systemImage: "questionmark.circle")
+            }
         }
     }
 

@@ -21,6 +21,11 @@ struct ContentView: View {
                         Label("Review", systemImage: "checkmark.circle")
                     }
 
+                DashboardTab()
+                    .tabItem {
+                        Label("Stats", systemImage: "chart.bar")
+                    }
+
                 SettingsTab()
                     .tabItem {
                         Label("Settings", systemImage: "gearshape")
