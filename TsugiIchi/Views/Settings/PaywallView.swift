@@ -146,7 +146,7 @@ struct PaywallView: View {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
                         Text("\(credits.totalRemaining)")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundStyle(credits.totalRemaining > 0 ? .primary : .red)
+                            .foregroundStyle(credits.totalRemaining > 0 ? Color.primary : Color.red)
                         Text("回")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
