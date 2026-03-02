@@ -74,14 +74,15 @@ struct PlanTab: View {
                     } else {
                         ForEach(weekSlots) { slot in
                             if let step = slot.step {
-                                PlanSlotRow(
-                                    slot: slot,
-                                    step: step,
-                                    onRemove: { removeFromPlan(slot: slot, step: step) },
-                                    onDone: { markStep(step, as: .done) },
-                                    onPostpone: { markStep(step, as: .postponed) },
-                                    onDiscard: { markStep(step, as: .discarded) }
-                                )
+                                        PlanSlotRow(
+                                            slot: slot,
+                                            step: step,
+                                            onRemove: { removeFromPlan(slot: slot, step: step) },
+                                            onDone: { markStep(step, as: .done) },
+                                            onPostpone: { markStep(step, as: .postponed) },
+                                            onDiscard: { markStep(step, as: .discarded) },
+                                            onRevert: { revertStep(step) }
+                                        )
                             }
                         }
                     }
@@ -198,6 +199,24 @@ struct PlanTab: View {
         }
     }
 
+    /// Revert a done/postponed/discarded step back to scheduled (available any time, not just via undo banner)
+    private func revertStep(_ step: Step) {
+        step.status = .scheduled
+        // Re-add calendar event if sync is enabled
+        if calendarSyncEnabled {
+            CalendarService.addEvent(
+                for: step.title,
+                stepId: step.id,
+                durationMin: step.durationMin,
+                goalTitle: step.goal?.title
+            )
+        }
+        // Reverse goal auto-completion if the goal was marked completed
+        if let goal = step.goal, goal.status == .completed {
+            goal.status = .active
+        }
+    }
+
     /// 全Step完了時にGoalを自動完了
     private func checkGoalCompletion(for step: Step) {
         guard let goal = step.goal, !goal.steps.isEmpty else { return }
@@ -230,6 +249,7 @@ private struct PlanSlotRow: View {
     let onDone: () -> Void
     let onPostpone: () -> Void
     let onDiscard: () -> Void
+    let onRevert: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -296,6 +316,15 @@ private struct PlanSlotRow: View {
                     Text(stepStatusLabel)
                         .font(.caption)
                         .foregroundStyle(stepStatusColor)
+
+                    Button {
+                        onRevert()
+                    } label: {
+                        Label("予定に戻す", systemImage: "arrow.uturn.backward.circle")
+                            .font(.caption)
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
