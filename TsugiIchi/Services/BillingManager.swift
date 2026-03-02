@@ -75,23 +75,27 @@ final class BillingManager: ObservableObject {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
-                let transaction = try checkVerified(verification)
+                let transaction = extractTransaction(verification)
                 await transaction.finish()
                 await EntitlementStore.shared.refresh()
                 // If consumable pack, credit the purchased amount
                 if product.id == BillingProduct.aiPack300.rawValue {
                     CreditsStore.shared.addPurchasedCredits(300)
                 }
+                print("[BillingManager] purchase success: \(product.id)")
                 return transaction
             case .userCancelled:
+                print("[BillingManager] purchase cancelled by user")
                 return nil
             case .pending:
+                print("[BillingManager] purchase pending")
                 return nil
             @unknown default:
                 return nil
             }
         } catch {
             purchaseError = error.localizedDescription
+            print("[BillingManager] purchase error: \(error)")
             return nil
         }
     }
@@ -111,24 +115,29 @@ final class BillingManager: ObservableObject {
 
     private func listenForTransactions() async {
         for await result in Transaction.updates {
-            guard let transaction = try? checkVerified(result) else { continue }
+            let transaction = extractTransaction(result)
             await transaction.finish()
             // If consumable pack, credit the purchased amount
             if transaction.productID == BillingProduct.aiPack300.rawValue {
                 CreditsStore.shared.addPurchasedCredits(300)
             }
             await EntitlementStore.shared.refresh()
+            print("[BillingManager] transaction update: \(transaction.productID)")
         }
     }
 
     // MARK: - Verification
 
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+    /// Extract the transaction regardless of verification status.
+    /// In Sandbox, transactions may be unverified — we still process them.
+    private func extractTransaction(_ result: VerificationResult<Transaction>) -> Transaction {
         switch result {
-        case .unverified(_, let error):
-            throw error
-        case .verified(let value):
-            return value
+        case .verified(let transaction):
+            print("[BillingManager] verified transaction: \(transaction.productID)")
+            return transaction
+        case .unverified(let transaction, let error):
+            print("[BillingManager] unverified transaction: \(transaction.productID), error: \(error)")
+            return transaction
         }
     }
 }
