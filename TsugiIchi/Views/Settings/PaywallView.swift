@@ -76,14 +76,14 @@ struct PaywallView: View {
                             } else {
                                 // Not subscribed - show both options
                                 // Yearly plan (recommended)
-                                if let yearly = billing.proYearlyProduct {
-                                    YearlyProductButton(product: yearly) {
+                                YearlyProductButton {
+                                    if let yearly = billing.proYearlyProduct {
                                         Task { await billing.purchase(yearly) }
                                     }
                                 }
                                 // Monthly plan
-                                if let monthly = billing.proMonthlyProduct {
-                                    MonthlyProductButton(product: monthly) {
+                                MonthlyProductButton {
+                                    if let monthly = billing.proMonthlyProduct {
                                         Task { await billing.purchase(monthly) }
                                     }
                                 }
@@ -231,7 +231,6 @@ private struct ProFeatureRow: View {
 // MARK: - YearlyProductButton
 
 private struct YearlyProductButton: View {
-    let product: Product
     let action: () -> Void
 
     var body: some View {
@@ -292,7 +291,6 @@ private struct YearlyProductButton: View {
 // MARK: - MonthlyProductButton
 
 private struct MonthlyProductButton: View {
-    let product: Product
     let action: () -> Void
 
     var body: some View {
