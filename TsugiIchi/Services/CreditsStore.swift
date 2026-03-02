@@ -111,11 +111,22 @@ final class CreditsStore: ObservableObject {
     // MARK: - Sync from Proxy
 
     /// Update local state from Proxy's `remaining` response.
-    /// This is a soft sync — we trust the Proxy value when available.
+    /// The Proxy is the source of truth for credit tracking (M11).
+    /// We adjust local `monthlyUsedCount` so that `totalRemaining` matches the Proxy value.
     func syncFromProxy(remaining: Int) {
-        // In M10 (local-only), this is a no-op placeholder.
-        // M11 will implement Proxy-based credit tracking.
-        // For now, the local calculation is the source of truth.
+        let proxyRemaining = max(0, remaining)
+        let localTotal = totalRemaining
+
+        // Only adjust if Proxy reports fewer credits than local (prevent inflation)
+        if proxyRemaining < localTotal {
+            // Derive how many monthly credits must have been used
+            // remaining = (monthlyLimit - monthlyUsed) + purchasedCredits
+            // => monthlyUsed = monthlyLimit - (remaining - purchasedCredits)
+            let monthlyRemainingFromProxy = max(0, proxyRemaining - purchasedCredits)
+            monthlyUsedCount = max(0, monthlyLimit - monthlyRemainingFromProxy)
+            save()
+        }
+        // If Proxy reports more, keep local (conservative — prevents gaming)
     }
 
     // MARK: - Pro status change

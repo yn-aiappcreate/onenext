@@ -1,33 +1,54 @@
 /**
- * ツギイチ AI Proxy — Cloudflare Worker
+ * ツギイチ AI Proxy — Cloudflare Worker (M11: Credits & Rate Limit)
  *
  * POST /generate-steps
  *   入力: { goalTitle, goalNote?, category?, constraints? }
- *   出力: { steps: [ { title, type, durationMin, dueSuggestion, notes } ] }
+ *   出力: { steps: [...], remaining: number }
+ *
+ * Headers (iOS → Proxy):
+ *   X-Client-Id:              端末固有ID（必須）
+ *   X-Is-Pro:                 "true" | "false"（Pro申告、MVP暫定信用）
+ *   X-Purchased-Credits:      number（端末側の購入パック残数）
+ *
+ * Credit limits (30-day rolling window, KV-persisted):
+ *   Free: 10/30days,  daily cap 10/day,  burst 5/min
+ *   Pro:  300/30days, daily cap 50/day,  burst 5/min
  *
  * 秘密鍵 OPENAI_API_KEY は wrangler secret で設定する（コードに埋め込まない）。
  * 認証トークン API_AUTH_TOKEN も wrangler secret で設定する。
  */
 
 // ---------------------------------------------------------------------------
-// Rate Limiter (IP-based, in-memory per isolate — 簡易版)
+// Constants
 // ---------------------------------------------------------------------------
 
-const rateLimitMap = new Map(); // key: IP, value: { count, resetAt }
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_MINUTE_MS = 60 * 1000;
+
+const LIMITS = {
+  free: { monthly: 10, daily: 10, perMinute: 5 },
+  pro:  { monthly: 300, daily: 50, perMinute: 5 },
+};
+
+// ---------------------------------------------------------------------------
+// In-memory per-minute rate limiter (per clientId, resets each minute)
+// ---------------------------------------------------------------------------
+
+const perMinuteMap = new Map(); // key: clientId, value: { count, resetAt }
 
 /**
- * @param {string} ip
- * @param {number} limit - requests per window
- * @param {number} windowMs - window duration in ms
+ * @param {string} key
+ * @param {number} limit
  * @returns {{ allowed: boolean, retryAfter: number | null }}
  */
-function checkRateLimit(ip, limit, windowMs) {
+function checkPerMinuteLimit(key, limit) {
   const now = Date.now();
-  let entry = rateLimitMap.get(ip);
+  let entry = perMinuteMap.get(key);
 
   if (!entry || now >= entry.resetAt) {
-    entry = { count: 0, resetAt: now + windowMs };
-    rateLimitMap.set(ip, entry);
+    entry = { count: 0, resetAt: now + ONE_MINUTE_MS };
+    perMinuteMap.set(key, entry);
   }
 
   entry.count += 1;
@@ -38,6 +59,131 @@ function checkRateLimit(ip, limit, windowMs) {
   }
 
   return { allowed: true, retryAfter: null };
+}
+
+// ---------------------------------------------------------------------------
+// KV-based credit tracking (clientId-keyed)
+// ---------------------------------------------------------------------------
+
+/**
+ * KV value schema (JSON):
+ * {
+ *   monthlyUsed: number,
+ *   windowStart: number (epoch ms),
+ *   dailyUsed: number,
+ *   dailyStart: number (epoch ms),
+ *   isPro: boolean,
+ *   purchasedCredits: number
+ * }
+ */
+
+/**
+ * Load client record from KV. Returns defaults if not found.
+ * @param {KVNamespace} kv
+ * @param {string} clientId
+ * @returns {Promise<object>}
+ */
+async function loadClientRecord(kv, clientId) {
+  const raw = await kv.get(`client:${clientId}`);
+  if (!raw) {
+    return {
+      monthlyUsed: 0,
+      windowStart: Date.now(),
+      dailyUsed: 0,
+      dailyStart: Date.now(),
+      isPro: false,
+      purchasedCredits: 0,
+    };
+  }
+  return JSON.parse(raw);
+}
+
+/**
+ * Save client record to KV with 60-day TTL.
+ * @param {KVNamespace} kv
+ * @param {string} clientId
+ * @param {object} record
+ */
+async function saveClientRecord(kv, clientId, record) {
+  await kv.put(`client:${clientId}`, JSON.stringify(record), {
+    expirationTtl: 60 * 24 * 60 * 60, // 60 days
+  });
+}
+
+/**
+ * Roll the 30-day window if expired.
+ * @param {object} record
+ * @returns {object} updated record
+ */
+function rollMonthlyWindow(record) {
+  const now = Date.now();
+  if (now - record.windowStart >= THIRTY_DAYS_MS) {
+    record.monthlyUsed = 0;
+    record.windowStart = now;
+  }
+  return record;
+}
+
+/**
+ * Roll the daily window if expired.
+ * @param {object} record
+ * @returns {object} updated record
+ */
+function rollDailyWindow(record) {
+  const now = Date.now();
+  if (now - record.dailyStart >= ONE_DAY_MS) {
+    record.dailyUsed = 0;
+    record.dailyStart = now;
+  }
+  return record;
+}
+
+/**
+ * Calculate remaining credits for a client.
+ * @param {object} record
+ * @param {boolean} isPro
+ * @returns {number}
+ */
+function calcRemaining(record, isPro) {
+  const limits = isPro ? LIMITS.pro : LIMITS.free;
+  const monthlyRemaining = Math.max(0, limits.monthly - record.monthlyUsed);
+  return monthlyRemaining + (record.purchasedCredits || 0);
+}
+
+/**
+ * Try to consume one credit. Returns { ok, remaining, reason? }.
+ * @param {object} record
+ * @param {boolean} isPro
+ * @returns {{ ok: boolean, remaining: number, reason?: string }}
+ */
+function consumeCredit(record, isPro) {
+  const limits = isPro ? LIMITS.pro : LIMITS.free;
+
+  // Roll windows
+  rollMonthlyWindow(record);
+  rollDailyWindow(record);
+
+  // Check daily cap
+  if (record.dailyUsed >= limits.daily) {
+    return { ok: false, remaining: calcRemaining(record, isPro), reason: "daily_limit" };
+  }
+
+  // Try monthly quota first
+  if (record.monthlyUsed < limits.monthly) {
+    record.monthlyUsed += 1;
+    record.dailyUsed += 1;
+    return { ok: true, remaining: calcRemaining(record, isPro) };
+  }
+
+  // Try purchased credits
+  if ((record.purchasedCredits || 0) > 0) {
+    record.purchasedCredits -= 1;
+    record.dailyUsed += 1;
+    return { ok: true, remaining: calcRemaining(record, isPro) };
+  }
+
+  // No credits
+  return { ok: false, remaining: 0, reason: "credits_exhausted" };
 }
 
 // ---------------------------------------------------------------------------
@@ -347,7 +493,7 @@ function validateResponse(raw) {
 export default {
   /**
    * @param {Request} request
-   * @param {{ OPENAI_API_KEY: string, API_AUTH_TOKEN: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, RATE_LIMIT_PER_MINUTE: string }} env
+   * @param {{ OPENAI_API_KEY: string, API_AUTH_TOKEN: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, CREDITS_KV: KVNamespace }} env
    */
   async fetch(request, env) {
     // --- CORS preflight ---
@@ -356,7 +502,7 @@ export default {
         status: 204,
         headers: {
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Id, X-Is-Pro, X-Purchased-Credits",
           "Access-Control-Max-Age": "86400",
         },
       });
@@ -384,17 +530,78 @@ export default {
       return errorResponse("Server misconfigured: OPENAI_API_KEY not set", 500);
     }
 
-    // --- Rate limit ---
-    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-    const rateLimit = parseInt(env.RATE_LIMIT_PER_MINUTE || "10", 10);
-    const { allowed, retryAfter } = checkRateLimit(ip, rateLimit, 60_000);
+    // --- Require X-Client-Id ---
+    const clientId = (request.headers.get("X-Client-Id") || "").trim();
+    if (!clientId) {
+      return errorResponse("X-Client-Id header is required", 400);
+    }
 
-    if (!allowed) {
+    // --- Read client metadata from headers (MVP: trust device) ---
+    const isPro = request.headers.get("X-Is-Pro") === "true";
+    const purchasedCreditsFromDevice = Math.max(
+      0,
+      parseInt(request.headers.get("X-Purchased-Credits") || "0", 10) || 0
+    );
+
+    // --- Per-minute burst limit (in-memory) ---
+    const limits = isPro ? LIMITS.pro : LIMITS.free;
+    const { allowed: minuteOk, retryAfter: minuteRetry } = checkPerMinuteLimit(
+      clientId,
+      limits.perMinute
+    );
+    if (!minuteOk) {
+      return errorResponse(
+        "Rate limit exceeded (per-minute). Try again later.",
+        429,
+        { "Retry-After": String(minuteRetry) }
+      );
+    }
+
+    // --- IP-based fallback rate limit (anti-abuse) ---
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    const ipBurstLimit = parseInt(env.RATE_LIMIT_PER_MINUTE || "10", 10);
+    const { allowed: ipOk, retryAfter: ipRetry } = checkPerMinuteLimit(
+      `ip:${ip}`,
+      ipBurstLimit
+    );
+    if (!ipOk) {
       return errorResponse(
         "Rate limit exceeded. Try again later.",
         429,
-        { "Retry-After": String(retryAfter) }
+        { "Retry-After": String(ipRetry) }
       );
+    }
+
+    // --- KV credit check ---
+    let record;
+    let creditResult;
+    if (env.CREDITS_KV) {
+      record = await loadClientRecord(env.CREDITS_KV, clientId);
+
+      // Sync isPro and purchasedCredits from device (MVP: trust)
+      record.isPro = isPro;
+      // Only increase purchasedCredits from device (never decrease server-side)
+      if (purchasedCreditsFromDevice > (record.purchasedCredits || 0)) {
+        record.purchasedCredits = purchasedCreditsFromDevice;
+      }
+
+      creditResult = consumeCredit(record, isPro);
+
+      if (!creditResult.ok) {
+        // Save updated windows even on failure
+        await saveClientRecord(env.CREDITS_KV, clientId, record);
+        if (creditResult.reason === "daily_limit") {
+          return errorResponse(
+            "Daily usage limit reached. Try again tomorrow.",
+            429,
+            { "Retry-After": "3600" }
+          );
+        }
+        return jsonResponse(
+          { error: "Credits exhausted", remaining: 0 },
+          403
+        );
+      }
     }
 
     // --- Parse body ---
@@ -433,7 +640,14 @@ export default {
       const raw = await callOpenAI(userPrompt, env.OPENAI_API_KEY, model, systemPrompt);
       const result = validateResponse(raw);
 
-      return jsonResponse(result);
+      // Save consumed credit to KV
+      const remaining = creditResult ? creditResult.remaining : null;
+      if (env.CREDITS_KV && record) {
+        await saveClientRecord(env.CREDITS_KV, clientId, record);
+      }
+
+      // Include remaining in response
+      return jsonResponse({ ...result, remaining });
     } catch (err) {
       console.error("AI generation failed:", err.message);
 
