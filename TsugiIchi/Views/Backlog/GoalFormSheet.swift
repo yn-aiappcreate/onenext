@@ -28,7 +28,7 @@ struct GoalFormSheet: View {
                     Picker("カテゴリ", selection: $category) {
                         Text("未設定").tag(GoalCategory?.none)
                         ForEach(GoalCategory.allCases) { cat in
-                            Label(cat.rawValue, systemImage: cat.systemImage)
+                            Label(cat.localizedName, systemImage: cat.systemImage)
                                 .tag(GoalCategory?.some(cat))
                         }
                     }

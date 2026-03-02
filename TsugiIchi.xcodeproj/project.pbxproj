@@ -32,6 +32,7 @@
 		E1BD4BFA0061587BBA4CE8EB /* Redactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C91C19BF2295CA481D0CEA6 /* Redactor.swift */; };
 		6D3D94C691775E6C8A0492F9 /* AIConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82ED74FBE23E54E1AB7C9F99 /* AIConsentView.swift */; };
 		DAC9D859E2A9559DB12DBDF0 /* AIStepSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B03DA85C525A0FB3B222E6 /* AIStepSheet.swift */; };
+		A1B2C3D4E5F60718A9B0C1D2 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = D2C1B0A9180706F5E4D3C2B1 /* Localizable.xcstrings */; };
 		D51A5EDD3CFE593AA4A33CBA /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */; };
 		4D7427777CA25DE8AA0B0AEF /* TemplateEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6008C347D80505980DB8174 /* TemplateEngineTests.swift */; };
 		2761F5B8F7E850938CC0B276 /* DateHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533E02662A195F7293225DA9 /* DateHelperTests.swift */; };
@@ -79,6 +80,7 @@
 		E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		A6008C347D80505980DB8174 /* TemplateEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateEngineTests.swift; sourceTree = "<group>"; };
 		533E02662A195F7293225DA9 /* DateHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelperTests.swift; sourceTree = "<group>"; };
+		D2C1B0A9180706F5E4D3C2B1 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,14 @@
 			);
 			sourceTree = "<group>";
 		};
+		F1A2B3C4D5E6071829304150 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D2C1B0A9180706F5E4D3C2B1 /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		3DDED454EC2055889EF00E23 /* TsugiIchi */ = {
 			isa = PBXGroup;
 			children = (
@@ -116,6 +126,7 @@
 				CFBB99D416D754E68A9E9B1A /* Views */,
 				58593C7BD77F5F2B9AE02A7E /* Services */,
 				4CF9346E5B8A582C9955A7F3 /* Utilities */,
+				F1A2B3C4D5E6071829304150 /* Resources */,
 			);
 			path = TsugiIchi;
 			sourceTree = "<group>";
@@ -327,6 +338,12 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				ja,
+				en,
+				"zh-Hans",
+				ko,
+				es,
+				fr,
+				de,
 				Base,
 			);
 			mainGroup = 5CA0B78FD70657BB919735B8;
@@ -346,6 +363,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C6DD360D988859EEA8484941 /* Assets.xcassets in Resources */,
+				A1B2C3D4E5F60718A9B0C1D2 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

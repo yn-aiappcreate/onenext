@@ -41,10 +41,11 @@ function checkRateLimit(ip, limit, windowMs) {
 }
 
 // ---------------------------------------------------------------------------
-// System prompt
+// System prompts (per language)
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `あなたはタスク分解アシスタントです。
+const SYSTEM_PROMPTS = {
+  ja: `あなたはタスク分解アシスタントです。
 ユーザーが「やりたいこと（Goal）」を与えるので、それを具体的な次の一手（Step）に分解してください。
 
 ルール:
@@ -67,7 +68,176 @@ const SYSTEM_PROMPT = `あなたはタスク分解アシスタントです。
       "notes": "任意の補足"
     }
   ]
-}`;
+}`,
+  en: `You are a task-decomposition assistant.
+The user gives you a Goal (something they want to do). Break it down into concrete next Steps.
+
+Rules:
+- Return 3–8 steps
+- The first step must be a "quick win" doable in 15 min today
+- Each step type must be one of: "research" | "reserve" | "prepare" | "go" | "create" | "contact"
+- durationMin must be one of: 15 | 30 | 60 | 120
+- dueSuggestion must be one of: "today" | "this_week" | "none"
+- Lean toward "research" for uncertain items
+- Use cautious language (avoid definitive statements)
+
+Respond ONLY with the following JSON format. Do NOT include any extra text:
+{
+  "steps": [
+    {
+      "title": "...",
+      "type": "research|reserve|prepare|go|create|contact",
+      "durationMin": 15,
+      "dueSuggestion": "today|this_week|none",
+      "notes": "optional notes"
+    }
+  ]
+}`,
+  "zh-Hans": `你是一个任务分解助手。
+用户会给你一个目标（Goal），请将其分解为具体的下一步行动（Step）。
+
+规则：
+- 返回3至8个步骤
+- 第一步必须是"今天15分钟内可完成的快速行动"
+- 每步的type必须是以下之一："调查" | "预约" | "准备" | "前往" | "制作" | "联系"
+- durationMin必须是以下之一：15 | 30 | 60 | 120
+- dueSuggestion必须是以下之一："today" | "this_week" | "none"
+- 不确定的内容归类为"调查"
+- 使用谨慎的表达方式
+
+请仅以以下JSON格式回复，不要包含任何额外文字：
+{
+  "steps": [
+    {
+      "title": "...",
+      "type": "调查|预约|准备|前往|制作|联系",
+      "durationMin": 15,
+      "dueSuggestion": "today|this_week|none",
+      "notes": "可选备注"
+    }
+  ]
+}`,
+  ko: `당신은 작업 분해 도우미입니다.
+사용자가 목표(Goal)를 제시하면, 구체적인 다음 단계(Step)로 분해해 주세요.
+
+규칙:
+- 3~8개의 단계를 반환합니다
+- 첫 번째 단계는 "오늘 15분 안에 할 수 있는 퀵윈"이어야 합니다
+- 각 단계의 type은 다음 중 하나: "조사" | "예약" | "준비" | "이동" | "만들기" | "연락"
+- durationMin은 다음 중 하나: 15 | 30 | 60 | 120
+- dueSuggestion은 다음 중 하나: "today" | "this_week" | "none"
+- 불확실한 내용은 "조사"로 분류합니다
+- 단정적 표현을 피합니다
+
+반드시 아래 JSON 형식으로만 응답하세요. 추가 설명은 포함하지 마세요:
+{
+  "steps": [
+    {
+      "title": "...",
+      "type": "조사|예약|준비|이동|만들기|연락",
+      "durationMin": 15,
+      "dueSuggestion": "today|this_week|none",
+      "notes": "선택적 메모"
+    }
+  ]
+}`,
+  es: `Eres un asistente de descomposición de tareas.
+El usuario te da un Objetivo (Goal). Desglósalo en pasos concretos (Steps).
+
+Reglas:
+- Devuelve entre 3 y 8 pasos
+- El primer paso debe ser una "victoria rápida" realizable en 15 min hoy
+- El type de cada paso debe ser uno de: "investigar" | "reservar" | "preparar" | "ir" | "crear" | "contactar"
+- durationMin debe ser uno de: 15 | 30 | 60 | 120
+- dueSuggestion debe ser uno de: "today" | "this_week" | "none"
+- Para elementos inciertos, usa "investigar"
+- Usa lenguaje prudente
+
+Responde SOLO con el siguiente formato JSON. NO incluyas texto adicional:
+{
+  "steps": [
+    {
+      "title": "...",
+      "type": "investigar|reservar|preparar|ir|crear|contactar",
+      "durationMin": 15,
+      "dueSuggestion": "today|this_week|none",
+      "notes": "notas opcionales"
+    }
+  ]
+}`,
+  fr: `Vous êtes un assistant de décomposition de tâches.
+L'utilisateur vous donne un Objectif (Goal). Décomposez-le en étapes concrètes (Steps).
+
+Règles :
+- Retournez 3 à 8 étapes
+- La première étape doit être une "victoire rapide" réalisable en 15 min aujourd'hui
+- Le type de chaque étape doit être l'un de : "rechercher" | "réserver" | "préparer" | "aller" | "créer" | "contacter"
+- durationMin doit être l'un de : 15 | 30 | 60 | 120
+- dueSuggestion doit être l'un de : "today" | "this_week" | "none"
+- Pour les éléments incertains, utilisez "rechercher"
+- Utilisez un langage prudent
+
+Répondez UNIQUEMENT avec le format JSON suivant. N'incluez AUCUN texte supplémentaire :
+{
+  "steps": [
+    {
+      "title": "...",
+      "type": "rechercher|réserver|préparer|aller|créer|contacter",
+      "durationMin": 15,
+      "dueSuggestion": "today|this_week|none",
+      "notes": "notes optionnelles"
+    }
+  ]
+}`,
+  de: `Sie sind ein Aufgabenzerlegungs-Assistent.
+Der Benutzer gibt Ihnen ein Ziel (Goal). Zerlegen Sie es in konkrete nächste Schritte (Steps).
+
+Regeln:
+- Geben Sie 3–8 Schritte zurück
+- Der erste Schritt muss ein "Quick Win" sein, der heute in 15 Min. machbar ist
+- Der Typ jedes Schritts muss einer von sein: "recherchieren" | "reservieren" | "vorbereiten" | "hingehen" | "erstellen" | "kontaktieren"
+- durationMin muss einer von sein: 15 | 30 | 60 | 120
+- dueSuggestion muss einer von sein: "today" | "this_week" | "none"
+- Bei unsicheren Inhalten "recherchieren" verwenden
+- Vorsichtige Formulierungen verwenden
+
+Antworten Sie NUR im folgenden JSON-Format. Fügen Sie KEINEN zusätzlichen Text hinzu:
+{
+  "steps": [
+    {
+      "title": "...",
+      "type": "recherchieren|reservieren|vorbereiten|hingehen|erstellen|kontaktieren",
+      "durationMin": 15,
+      "dueSuggestion": "today|this_week|none",
+      "notes": "optionale Anmerkungen"
+    }
+  ]
+}`
+};
+
+/**
+ * Resolve the system prompt for a given Accept-Language header value.
+ * Falls back to Japanese (ja) when no supported language is matched.
+ * @param {string | null} acceptLang
+ * @returns {string}
+ */
+function resolveSystemPrompt(acceptLang) {
+  if (!acceptLang) return SYSTEM_PROMPTS.ja;
+
+  // Parse "en-US,en;q=0.9,ja;q=0.8" → ["en-US", "en", "ja"]
+  const tags = acceptLang.split(",").map((t) => t.split(";")[0].trim().toLowerCase());
+
+  for (const tag of tags) {
+    // Exact match first (e.g., "zh-hans")
+    if (SYSTEM_PROMPTS[tag]) return SYSTEM_PROMPTS[tag];
+    // Prefix match (e.g., "en-US" → "en", "zh-Hans" → "zh-Hans")
+    if (tag.startsWith("zh")) return SYSTEM_PROMPTS["zh-Hans"];
+    const prefix = tag.split("-")[0];
+    if (SYSTEM_PROMPTS[prefix]) return SYSTEM_PROMPTS[prefix];
+  }
+
+  return SYSTEM_PROMPTS.ja;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -94,9 +264,9 @@ function errorResponse(message, status, extraHeaders = {}) {
  */
 function buildUserPrompt(body) {
   let prompt = `Goal: ${body.goalTitle}`;
-  if (body.goalNote) prompt += `\nメモ: ${body.goalNote}`;
-  if (body.category) prompt += `\nカテゴリ: ${body.category}`;
-  if (body.constraints) prompt += `\n制約: ${body.constraints}`;
+  if (body.goalNote) prompt += `\nNote: ${body.goalNote}`;
+  if (body.category) prompt += `\nCategory: ${body.category}`;
+  if (body.constraints) prompt += `\nConstraints: ${body.constraints}`;
   return prompt;
 }
 
@@ -107,7 +277,7 @@ function buildUserPrompt(body) {
  * @param {string} model
  * @returns {Promise<object>}
  */
-async function callOpenAI(userPrompt, apiKey, model) {
+async function callOpenAI(userPrompt, apiKey, model, systemPrompt) {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -117,7 +287,7 @@ async function callOpenAI(userPrompt, apiKey, model) {
     body: JSON.stringify({
       model,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
       temperature: 0.7,
@@ -258,7 +428,9 @@ export default {
     try {
       const userPrompt = buildUserPrompt(body);
       const model = env.OPENAI_MODEL || "gpt-4o-mini";
-      const raw = await callOpenAI(userPrompt, env.OPENAI_API_KEY, model);
+      const acceptLang = request.headers.get("Accept-Language");
+      const systemPrompt = resolveSystemPrompt(acceptLang);
+      const raw = await callOpenAI(userPrompt, env.OPENAI_API_KEY, model, systemPrompt);
       const result = validateResponse(raw);
 
       return jsonResponse(result);

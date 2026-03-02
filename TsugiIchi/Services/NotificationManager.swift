@@ -27,8 +27,8 @@ enum NotificationManager {
         )
 
         let content = UNMutableNotificationContent()
-        content.title = "週次レビューの時間です"
-        content.body = "今週のStepを振り返り、来週のプランを立てましょう"
+        content.title = String(localized: "週次レビューの時間です")
+        content.body = String(localized: "今週のStepを振り返り、来週のプランを立てましょう")
         content.sound = .default
 
         var dateComponents = DateComponents()

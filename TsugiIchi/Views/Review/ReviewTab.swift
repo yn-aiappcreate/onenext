@@ -438,7 +438,7 @@ struct GoalPickerSheet: View {
                                         .foregroundStyle(.primary)
                                     HStack(spacing: 8) {
                                         if let category = goal.category {
-                                            Label(category.rawValue, systemImage: category.systemImage)
+                                            Label(category.localizedName, systemImage: category.systemImage)
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
                                         }

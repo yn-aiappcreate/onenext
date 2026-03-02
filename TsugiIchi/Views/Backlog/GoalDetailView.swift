@@ -33,7 +33,7 @@ struct GoalDetailView: View {
 
                 if let category = goal.category {
                     LabeledContent("カテゴリ") {
-                        Label(category.rawValue, systemImage: category.systemImage)
+                        Label(category.localizedName, systemImage: category.systemImage)
                     }
                 }
 
@@ -148,7 +148,7 @@ struct GoalDetailView: View {
                 LabeledContent("作成日") {
                     Text(goal.createdAt, style: .date)
                 }
-                LabeledContent("ステータス", value: goal.status.rawValue)
+                LabeledContent("ステータス", value: goal.status.localizedName)
             }
         }
         .navigationTitle(goal.title)

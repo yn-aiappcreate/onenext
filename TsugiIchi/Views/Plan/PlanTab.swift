@@ -118,14 +118,14 @@ struct PlanTab: View {
 
     private func formattedDuration(_ minutes: Int) -> String {
         if minutes < 60 {
-            return "\(minutes)分"
+            return String(localized: "\(minutes)分")
         }
         let hours = minutes / 60
         let remaining = minutes % 60
         if remaining == 0 {
-            return "\(hours)時間"
+            return String(localized: "\(hours)時間")
         }
-        return "\(hours)時間\(remaining)分"
+        return String(localized: "\(hours)時間\(remaining)分")
     }
 }
 
@@ -232,9 +232,9 @@ private struct PlanSlotRow: View {
 
     private var stepStatusLabel: String {
         switch step.status {
-        case .done: "完了済み"
-        case .postponed: "延期済み"
-        case .discarded: "破棄済み"
+        case .done: String(localized: "完了済み")
+        case .postponed: String(localized: "延期済み")
+        case .discarded: String(localized: "破棄済み")
         default: ""
         }
     }
