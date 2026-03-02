@@ -8,6 +8,7 @@ final class EntitlementStore: ObservableObject {
     static let shared = EntitlementStore()
 
     @Published private(set) var isPro: Bool = false
+    @Published private(set) var activeProductId: String?
 
     /// The JWS representation of the current Pro transaction for server-side verification (M12).
     /// This is sent to the Proxy so it can cryptographically verify Pro status.
@@ -31,6 +32,7 @@ final class EntitlementStore: ObservableObject {
                 // Check the subscription hasn't been revoked
                 if transaction.revocationDate == nil {
                     foundPro = true
+                    activeProductId = transaction.productID
                     jws = result.jwsRepresentation
                 }
             }
@@ -38,6 +40,7 @@ final class EntitlementStore: ObservableObject {
 
         isPro = foundPro
         proTransactionJWS = jws
+        if !foundPro { activeProductId = nil }
     }
 
     // MARK: - Convenience

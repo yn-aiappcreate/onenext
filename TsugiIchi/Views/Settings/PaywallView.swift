@@ -61,23 +61,36 @@ struct PaywallView: View {
                             .padding()
                     } else {
                         VStack(spacing: 12) {
-                            // Yearly plan (recommended)
-                            if let yearly = billing.proYearlyProduct {
-                                YearlyProductButton(
-                                    product: yearly,
-                                    monthlyProduct: billing.proMonthlyProduct
-                                ) {
-                                    Task { await billing.purchase(yearly) }
+                            if entitlements.isPro {
+                                // Already subscribed - show current plan
+                                HStack {
+                                    Image(systemName: "checkmark.seal.fill")
+                                        .foregroundStyle(.green)
+                                    Text(entitlements.activeProductId == BillingProduct.proYearly.rawValue
+                                         ? "Pro（年額）プラン利用中"
+                                         : "Pro（月額）プラン利用中")
+                                        .font(.headline)
+                                        .foregroundStyle(.green)
+                                }
+                                .padding()
+                            } else {
+                                // Not subscribed - show both options
+                                // Yearly plan (recommended)
+                                if let yearly = billing.proYearlyProduct {
+                                    YearlyProductButton(product: yearly) {
+                                        Task { await billing.purchase(yearly) }
+                                    }
+                                }
+                                // Monthly plan
+                                if let monthly = billing.proMonthlyProduct {
+                                    MonthlyProductButton(product: monthly) {
+                                        Task { await billing.purchase(monthly) }
+                                    }
                                 }
                             }
-                            // Monthly plan
-                            if let monthly = billing.proMonthlyProduct {
-                                ProductButton(product: monthly, label: "Pro（月額）") {
-                                    Task { await billing.purchase(monthly) }
-                                }
-                            }
-                            if let pack = billing.packProduct {
-                                ProductButton(product: pack, label: "AI追加パック (+300回)") {
+                            // AI pack is always available for Pro users
+                            if entitlements.isPro, let pack = billing.packProduct {
+                                PackProductButton(product: pack) {
                                     Task { await billing.purchase(pack) }
                                 }
                             }
@@ -215,20 +228,80 @@ private struct ProFeatureRow: View {
     }
 }
 
-// MARK: - ProductButton
+// MARK: - YearlyProductButton
 
-private struct ProductButton: View {
+private struct YearlyProductButton: View {
     let product: Product
-    let label: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Text("Pro（年額）")
+                                .font(.headline)
+                            Text("おすすめ")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.orange, in: RoundedRectangle(cornerRadius: 4))
+                        }
+                        HStack(spacing: 6) {
+                            Text("¥3,600")
+                                .font(.subheadline)
+                                .strikethrough()
+                                .foregroundStyle(.secondary)
+                            Text("¥2,500 / 年")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 4) {
+                    Text("月あたり約¥208")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                    Text("· 30%OFF")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.orange)
+                }
+            }
+            .padding()
+            .background(Color.orange.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - MonthlyProductButton
+
+private struct MonthlyProductButton: View {
+    let product: Product
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label)
+                    Text("Pro（月額）")
                         .font(.headline)
-                    Text(product.displayPrice + periodSuffix)
+                    Text("¥300 / 月")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -243,88 +316,34 @@ private struct ProductButton: View {
         }
         .buttonStyle(.plain)
     }
-
-    private var periodSuffix: String {
-        guard product.type == .autoRenewable,
-              let subscription = product.subscription else {
-            return ""
-        }
-        switch subscription.subscriptionPeriod.unit {
-        case .year:  return " / 年"
-        case .month: return " / 月"
-        case .week:  return " / 週"
-        case .day:   return " / 日"
-        @unknown default: return ""
-        }
-    }
 }
 
-// MARK: - YearlyProductButton
+// MARK: - PackProductButton
 
-private struct YearlyProductButton: View {
+private struct PackProductButton: View {
     let product: Product
-    let monthlyProduct: Product?
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Text("Pro（年額）")
-                                .font(.headline)
-                            Text("おすすめ")
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(.orange, in: RoundedRectangle(cornerRadius: 4))
-                        }
-                        Text(product.displayPrice + " / 年")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("AI追加パック (+300回)")
+                        .font(.headline)
+                    Text("¥500")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-
-                // Discount display
-                if let monthly = monthlyProduct {
-                    HStack(spacing: 4) {
-                        Text(monthly.displayPrice + "/月")
-                            .font(.caption)
-                            .strikethrough()
-                            .foregroundStyle(.secondary)
-                        Text("→")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(monthlyEquivalent + "/月")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.orange)
-                    }
-                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             .padding()
-            .background(Color.orange.opacity(0.1))
+            .background(Color.blue.opacity(0.1))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-            )
         }
         .buttonStyle(.plain)
-    }
-
-    /// Calculate the monthly equivalent price of the yearly subscription.
-    private var monthlyEquivalent: String {
-        let perMonth = product.price / 12
-        // Use the same format style as the product's displayPrice
-        return perMonth.formatted(product.priceFormatStyle)
     }
 }
 
