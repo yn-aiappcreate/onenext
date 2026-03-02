@@ -12,4 +12,7 @@ enum Constants {
 
     /// Default AI proxy endpoint URL (placeholder – user must configure their own proxy).
     static let defaultAIProxyURL = "https://your-proxy.example.com"
+
+    /// Default AI proxy auth token (empty = no auth).
+    static let defaultAIAuthToken = ""
 }

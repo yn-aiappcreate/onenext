@@ -50,6 +50,21 @@ npx wrangler secret put OPENAI_API_KEY
 > **重要**: APIキーは `wrangler.toml` やソースコードに**絶対に書かない**でください。
 > `wrangler secret` で設定した値はCloudflareのシークレットストアに暗号化保存されます。
 
+### 3.5 認証トークンを設定（推奨）
+
+```bash
+npx wrangler secret put API_AUTH_TOKEN
+```
+
+任意のランダム文字列を入力してください。例:
+```bash
+openssl rand -hex 32
+```
+
+> **なぜ必要？**: 認証トークンを設定すると、WorkerはBearerトークンが一致するリクエストのみ受け付けます。
+> URLが漏れても、トークンを知らない第三者はOpenAI APIクレジットを消費できません。
+> 設定しない場合は認証なし（レート制限のみ）で動作します。
+
 ### 4. デプロイ
 
 ```bash
@@ -70,6 +85,7 @@ Published tsugiichi-ai-proxy (x.xx sec)
 ```bash
 curl -X POST https://tsugiichi-ai-proxy.<your-subdomain>.workers.dev/generate-steps \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <あなたのトークン>" \
   -d '{"goalTitle": "沖縄旅行の計画を立てる"}'
 ```
 
@@ -99,7 +115,8 @@ curl -X POST https://tsugiichi-ai-proxy.<your-subdomain>.workers.dev/generate-st
    ```
    https://tsugiichi-ai-proxy.<your-subdomain>.workers.dev
    ```
-4. これで「AIでステップ案を作る」ボタンが動作します
+4. **認証トークン（任意）** に、ステップ3.5で設定したトークンを入力
+5. これで「AIでステップ案を作る」ボタンが動作します
 
 ## 環境変数一覧
 
@@ -108,6 +125,7 @@ curl -X POST https://tsugiichi-ai-proxy.<your-subdomain>.workers.dev/generate-st
 | 変数名 | 必須 | 説明 |
 |--------|------|------|
 | `OPENAI_API_KEY` | Yes | OpenAI APIキー（`sk-...`） |
+| `API_AUTH_TOKEN` | 推奨 | Bearer認証トークン（未設定時は認証なし） |
 
 ### 環境変数（`wrangler.toml` の `[vars]` で設定）
 
@@ -126,9 +144,13 @@ curl -X POST https://tsugiichi-ai-proxy.<your-subdomain>.workers.dev/generate-st
 ### 入力サイズ制限
 - goalTitle + goalNote + category + constraints の合計が **2000文字**（デフォルト）を超えると `400 Bad Request`
 
+### Bearerトークン認証
+- `API_AUTH_TOKEN` を設定すると、`Authorization: Bearer <token>` ヘッダーが必須になる
+- URLが漏洩しても、トークンなしではAPIを利用できない
+- 未設定時は認証なし（レート制限のみ）で動作
+
 ### CORSポリシー
-- 現在は `Access-Control-Allow-Origin: *`（全オリジン許可）
-- 本番運用時は特定ドメインに制限することを推奨
+- iOSネイティブアプリからの通信にはCORS不要のため、ワイルドカードは削除済み
 
 ## ローカル開発
 
@@ -148,6 +170,7 @@ npm run dev
 
 | エラー | 原因 | 対処 |
 |--------|------|------|
+| `401: Unauthorized` | 認証トークン不一致 | iOSの設定画面で正しいトークンを入力（Worker側の `API_AUTH_TOKEN` と一致させる） |
 | `500: OPENAI_API_KEY not set` | シークレット未設定 | `wrangler secret put OPENAI_API_KEY` |
 | `404: Not Found` | パスが間違い | `POST /generate-steps` を確認 |
 | `400: goalTitle is required` | リクエストボディ不正 | JSON形式で `goalTitle` を含める |
