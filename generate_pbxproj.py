@@ -17,6 +17,8 @@ for key in [
     "fr_onboarding_view",
     "fr_ai_models", "fr_ai_service", "fr_redactor",
     "fr_ai_consent_view", "fr_ai_step_sheet",
+    "fr_billing_manager", "fr_entitlement_store", "fr_credits_store",
+    "fr_client_id", "fr_paywall_view",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
 ]:
@@ -33,6 +35,8 @@ for key in [
     "bf_onboarding_view",
     "bf_ai_models", "bf_ai_service", "bf_redactor",
     "bf_ai_consent_view", "bf_ai_step_sheet",
+    "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
+    "bf_client_id", "bf_paywall_view",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
     ids[key] = make_id(key)
@@ -81,6 +85,11 @@ bf_to_fr = {
     "bf_redactor": ("fr_redactor", "Redactor.swift"),
     "bf_ai_consent_view": ("fr_ai_consent_view", "AIConsentView.swift"),
     "bf_ai_step_sheet": ("fr_ai_step_sheet", "AIStepSheet.swift"),
+    "bf_billing_manager": ("fr_billing_manager", "BillingManager.swift"),
+    "bf_entitlement_store": ("fr_entitlement_store", "EntitlementStore.swift"),
+    "bf_credits_store": ("fr_credits_store", "CreditsStore.swift"),
+    "bf_client_id": ("fr_client_id", "ClientId.swift"),
+    "bf_paywall_view": ("fr_paywall_view", "PaywallView.swift"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
     "bf_datehelper_tests": ("fr_datehelper_tests", "DateHelperTests.swift"),
@@ -95,6 +104,8 @@ app_sources = [
     "bf_empty_state", "bf_onboarding_view",
     "bf_ai_models", "bf_ai_service", "bf_redactor",
     "bf_ai_consent_view", "bf_ai_step_sheet",
+    "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
+    "bf_client_id", "bf_paywall_view",
 ]
 app_resources = ["bf_assets"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
@@ -162,6 +173,11 @@ fr_info = [
     ("fr_redactor", "lastKnownFileType = sourcecode.swift", "Redactor.swift", '"<group>"'),
     ("fr_ai_consent_view", "lastKnownFileType = sourcecode.swift", "AIConsentView.swift", '"<group>"'),
     ("fr_ai_step_sheet", "lastKnownFileType = sourcecode.swift", "AIStepSheet.swift", '"<group>"'),
+    ("fr_billing_manager", "lastKnownFileType = sourcecode.swift", "BillingManager.swift", '"<group>"'),
+    ("fr_entitlement_store", "lastKnownFileType = sourcecode.swift", "EntitlementStore.swift", '"<group>"'),
+    ("fr_credits_store", "lastKnownFileType = sourcecode.swift", "CreditsStore.swift", '"<group>"'),
+    ("fr_client_id", "lastKnownFileType = sourcecode.swift", "ClientId.swift", '"<group>"'),
+    ("fr_paywall_view", "lastKnownFileType = sourcecode.swift", "PaywallView.swift", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
     ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
@@ -267,9 +283,13 @@ write_group("gr_components", "Components", [
 for grp, fr, fname, path in [
     ("gr_plan", "fr_plan_tab", "PlanTab.swift", "Plan"),
     ("gr_review", "fr_review_tab", "ReviewTab.swift", "Review"),
-    ("gr_settings", "fr_settings_tab", "SettingsTab.swift", "Settings"),
 ]:
     write_group(grp, path, [(fr, fname)], path=path)
+
+write_group("gr_settings", "Settings", [
+    ("fr_settings_tab", "SettingsTab.swift"),
+    ("fr_paywall_view", "PaywallView.swift"),
+], path="Settings")
 
 write_group("gr_onboarding", "Onboarding", [
     ("fr_onboarding_view", "OnboardingView.swift"),
@@ -286,11 +306,15 @@ write_group("gr_services", "Services", [
     ("fr_csv_exporter", "CSVExporter.swift"),
     ("fr_ai_service", "AIService.swift"),
     ("fr_redactor", "Redactor.swift"),
+    ("fr_billing_manager", "BillingManager.swift"),
+    ("fr_entitlement_store", "EntitlementStore.swift"),
+    ("fr_credits_store", "CreditsStore.swift"),
 ], path="Services")
 
 write_group("gr_utilities", "Utilities", [
     ("fr_date_helper", "DateHelper.swift"),
     ("fr_constants", "Constants.swift"),
+    ("fr_client_id", "ClientId.swift"),
 ], path="Utilities")
 
 write_group("gr_tests", "TsugiIchiTests", [
