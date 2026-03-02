@@ -62,7 +62,22 @@ struct BacklogTab: View {
 
     private func deleteGoals(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(goals[index])
+            let goal = goals[index]
+            // Clean up PlanSlots that reference this goal's steps before cascade delete
+            cleanUpPlanSlots(for: goal)
+            modelContext.delete(goal)
+        }
+    }
+
+    /// Remove PlanSlots whose step belongs to the given goal (prevents orphaned slots after cascade delete)
+    private func cleanUpPlanSlots(for goal: Goal) {
+        let stepIds = Set(goal.steps.map { $0.id })
+        let descriptor = FetchDescriptor<PlanSlot>()
+        guard let allSlots = try? modelContext.fetch(descriptor) else { return }
+        for slot in allSlots {
+            if let step = slot.step, stepIds.contains(step.id) {
+                modelContext.delete(slot)
+            }
         }
     }
 }

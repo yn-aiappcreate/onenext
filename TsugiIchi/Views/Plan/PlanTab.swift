@@ -16,7 +16,7 @@ struct PlanTab: View {
 
     private var weekSlots: [PlanSlot] {
         allSlots
-            .filter { $0.weekId == currentWeekId }
+            .filter { $0.weekId == currentWeekId && $0.step != nil }
             .sorted { $0.index < $1.index }
     }
 

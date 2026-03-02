@@ -203,6 +203,8 @@ struct GoalDetailView: View {
 
     private func regenerateSteps() {
         guard let category = goal.category else { return }
+        // Clean up PlanSlots that reference the old steps before deleting them
+        cleanUpPlanSlots(for: goal)
         // Delete existing steps
         for step in goal.steps {
             modelContext.delete(step)
@@ -210,6 +212,18 @@ struct GoalDetailView: View {
         goal.steps.removeAll()
         // Generate new steps
         TemplateEngine.generateSteps(for: goal, category: category)
+    }
+
+    /// Remove PlanSlots whose step belongs to the given goal (prevents orphaned slots)
+    private func cleanUpPlanSlots(for goal: Goal) {
+        let stepIds = Set(goal.steps.map { $0.id })
+        let descriptor = FetchDescriptor<PlanSlot>()
+        guard let allSlots = try? modelContext.fetch(descriptor) else { return }
+        for slot in allSlots {
+            if let step = slot.step, stepIds.contains(step.id) {
+                modelContext.delete(slot)
+            }
+        }
     }
 
     /// 全Step完了時にGoalを自動完了
