@@ -303,15 +303,15 @@ private struct StepRow: View {
                         .foregroundStyle(.orange)
                 }
                 .buttonStyle(.plain)
-            } else if step.status == .done {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-            } else if step.status == .postponed {
-                Image(systemName: "arrow.uturn.right.circle")
-                    .foregroundStyle(.orange)
-            } else if step.status == .discarded {
-                Image(systemName: "xmark.circle")
-                    .foregroundStyle(.red)
+            } else if step.status == .done || step.status == .postponed || step.status == .discarded {
+                Button {
+                    revertToScheduled()
+                } label: {
+                    Label("予定に戻す", systemImage: "arrow.uturn.backward.circle")
+                        .font(.caption)
+                        .foregroundStyle(Color.accentColor)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -345,6 +345,24 @@ private struct StepRow: View {
         if calendarSyncEnabled {
             CalendarService.removeEvent(for: step.id)
         }
+    }
+
+    private func revertToScheduled() {
+        step.status = .scheduled
+        // Re-add calendar event if sync is enabled
+        if calendarSyncEnabled {
+            CalendarService.addEvent(
+                for: step.title,
+                stepId: step.id,
+                durationMin: step.durationMin,
+                goalTitle: step.goal?.title
+            )
+        }
+        // Reverse goal auto-completion if the goal was marked completed
+        if let goal = step.goal, goal.status == .completed {
+            goal.status = .active
+        }
+        onStatusChange?()
     }
 
     private var statusIcon: String {
