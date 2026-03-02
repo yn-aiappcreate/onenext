@@ -6,6 +6,7 @@
  *   出力: { steps: [ { title, type, durationMin, dueSuggestion, notes } ] }
  *
  * 秘密鍵 OPENAI_API_KEY は wrangler secret で設定する（コードに埋め込まない）。
+ * 認証トークン API_AUTH_TOKEN も wrangler secret で設定する。
  */
 
 // ---------------------------------------------------------------------------
@@ -176,7 +177,7 @@ function validateResponse(raw) {
 export default {
   /**
    * @param {Request} request
-   * @param {{ OPENAI_API_KEY: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, RATE_LIMIT_PER_MINUTE: string }} env
+   * @param {{ OPENAI_API_KEY: string, API_AUTH_TOKEN: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, RATE_LIMIT_PER_MINUTE: string }} env
    */
   async fetch(request, env) {
     // --- CORS preflight ---
@@ -184,9 +185,8 @@ export default {
       return new Response(null, {
         status: 204,
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
           "Access-Control-Max-Age": "86400",
         },
       });
@@ -196,6 +196,17 @@ export default {
     const url = new URL(request.url);
     if (request.method !== "POST" || url.pathname !== "/generate-steps") {
       return errorResponse("Not Found. Use POST /generate-steps", 404);
+    }
+
+    // --- Bearer token authentication ---
+    if (env.API_AUTH_TOKEN) {
+      const authHeader = request.headers.get("Authorization") || "";
+      const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : "";
+      if (token !== env.API_AUTH_TOKEN) {
+        return errorResponse("Unauthorized", 401);
+      }
     }
 
     // --- API key check ---
@@ -250,22 +261,19 @@ export default {
       const raw = await callOpenAI(userPrompt, env.OPENAI_API_KEY, model);
       const result = validateResponse(raw);
 
-      return jsonResponse(result, 200, {
-        "Access-Control-Allow-Origin": "*",
-      });
+      return jsonResponse(result);
     } catch (err) {
       console.error("AI generation failed:", err.message);
 
-      // Pass through OpenAI rate limit
-      if (err.message.includes("429")) {
+      // Pass through OpenAI rate limit (check status code in error message)
+      const statusMatch = err.message.match(/OpenAI API error (\d+)/);
+      if (statusMatch && statusMatch[1] === "429") {
         return errorResponse("AI provider rate limited. Try again later.", 429, {
           "Retry-After": "30",
         });
       }
 
-      return errorResponse("AI generation failed. Please try again.", 500, {
-        "Access-Control-Allow-Origin": "*",
-      });
+      return errorResponse("AI generation failed. Please try again.", 500);
     }
   },
 };

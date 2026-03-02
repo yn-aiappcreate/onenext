@@ -12,6 +12,7 @@ struct AIStepSheet: View {
     @AppStorage("aiConfirmBeforeSend") private var aiConfirmBeforeSend = true
     @AppStorage("aiAutoRedact") private var aiAutoRedact = true
     @AppStorage("aiEndpointURL") private var aiEndpointURL = Constants.defaultAIProxyURL
+    @AppStorage("aiAuthToken") private var aiAuthToken = Constants.defaultAIAuthToken
 
     @State private var phase: Phase = .consent
     @State private var previewPayload: AIRequestPayload?
@@ -312,7 +313,8 @@ struct AIStepSheet: View {
         do {
             let steps = try await AIService.generateSteps(
                 payload: payload,
-                endpointURL: aiEndpointURL
+                endpointURL: aiEndpointURL,
+                authToken: aiAuthToken
             )
             generatedSteps = steps
             phase = .result

@@ -43,7 +43,8 @@ enum AIService {
     /// - Returns: An array of AI step suggestions.
     static func generateSteps(
         payload: AIRequestPayload,
-        endpointURL: String
+        endpointURL: String,
+        authToken: String = ""
     ) async throws -> [AIStepResult] {
         guard let baseURL = URL(string: endpointURL),
               !endpointURL.trimmingCharacters(in: .whitespaces).isEmpty else {
@@ -55,6 +56,9 @@ enum AIService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if !authToken.isEmpty {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
         request.timeoutInterval = 30
 
         let encoder = JSONEncoder()

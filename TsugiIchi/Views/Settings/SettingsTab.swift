@@ -16,6 +16,7 @@ struct SettingsTab: View {
     @AppStorage("aiConfirmBeforeSend") private var aiConfirmBeforeSend = true
     @AppStorage("aiAutoRedact") private var aiAutoRedact = true
     @AppStorage("aiEndpointURL") private var aiEndpointURL = Constants.defaultAIProxyURL
+    @AppStorage("aiAuthToken") private var aiAuthToken = Constants.defaultAIAuthToken
 
     // MARK: - エクスポート
     @State private var showExportSheet = false
@@ -74,6 +75,16 @@ struct SettingsTab: View {
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .keyboardType(.URL)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("認証トークン（任意）")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            SecureField("Bearer token", text: $aiAuthToken)
+                                .font(.system(.body, design: .monospaced))
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
                         }
 
                         Toggle("送信前に毎回確認", isOn: $aiConfirmBeforeSend)
