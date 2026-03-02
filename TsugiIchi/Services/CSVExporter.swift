@@ -6,7 +6,7 @@ enum CSVExporter {
     /// Goal 一覧の CSV 文字列を生成
     static func exportGoals(_ goals: [Goal]) -> String {
         var rows: [String] = []
-        rows.append("Goal ID,タイトル,カテゴリ,優先度,ステータス,期限,作成日,Step数,完了Step数")
+        rows.append("Goal ID,\(String(localized: "タイトル")),\(String(localized: "カテゴリ")),\(String(localized: "優先度")),\(String(localized: "ステータス")),\(String(localized: "期限")),\(String(localized: "作成日")),Step\(String(localized: "数")),\(String(localized: "完了"))Step\(String(localized: "数"))")
         for goal in goals {
             let id = goal.id.uuidString
             let title = escape(goal.title)
@@ -25,7 +25,7 @@ enum CSVExporter {
     /// Step 一覧の CSV 文字列を生成
     static func exportSteps(_ goals: [Goal]) -> String {
         var rows: [String] = []
-        rows.append("Step ID,Goal,タイトル,所要時間(分),タイプ,ステータス,予定日")
+        rows.append("Step ID,Goal,\(String(localized: "タイトル")),\(String(localized: "所要時間(分)")),\(String(localized: "タイプ")),\(String(localized: "ステータス")),\(String(localized: "予定日"))")
         for goal in goals {
             for step in goal.steps.sorted(by: { $0.sortOrder < $1.sortOrder }) {
                 let id = step.id.uuidString
@@ -45,7 +45,7 @@ enum CSVExporter {
     private static func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.locale = Locale.current
         return formatter.string(from: date)
     }
 

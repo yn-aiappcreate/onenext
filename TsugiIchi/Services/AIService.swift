@@ -13,20 +13,20 @@ enum AIServiceError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkUnavailable:
-            return "ネットワーク接続を確認してください"
+            return String(localized: "ネットワーク接続を確認してください")
         case .serverError(let code):
-            return "サーバーエラーが発生しました（\(code)）"
+            return String(localized: "サーバーエラーが発生しました（\(code)）")
         case .rateLimited(let retry):
             if let retry {
-                return "しばらく待ってから再度お試しください（\(retry)秒後）"
+                return String(localized: "しばらく待ってから再度お試しください（\(retry)秒後）")
             }
-            return "しばらく待ってから再度お試しください"
+            return String(localized: "しばらく待ってから再度お試しください")
         case .invalidJSON:
-            return "AIの応答を解釈できませんでした"
+            return String(localized: "AIの応答を解釈できませんでした")
         case .emptySteps:
-            return "ステップを生成できませんでした"
+            return String(localized: "ステップを生成できませんでした")
         case .proxyURLMissing:
-            return "AIエンドポイントURLが設定されていません"
+            return String(localized: "AIエンドポイントURLが設定されていません")
         }
     }
 }
@@ -59,6 +59,9 @@ enum AIService {
         if !authToken.isEmpty {
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }
+        // Send device preferred language so the Worker can generate prompts in the right language
+        let preferredLang = Locale.preferredLanguages.first ?? "ja"
+        request.setValue(preferredLang, forHTTPHeaderField: "Accept-Language")
         request.timeoutInterval = 30
 
         let encoder = JSONEncoder()

@@ -47,6 +47,17 @@ enum GoalCategory: String, Codable, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Localized display name (rawValue is kept for SwiftData storage).
+    var localizedName: String {
+        switch self {
+        case .travel:   String(localized: "旅行")
+        case .event:    String(localized: "イベント")
+        case .learning: String(localized: "学習")
+        case .health:   String(localized: "健康")
+        case .hobby:    String(localized: "趣味")
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .travel:   "airplane"
@@ -67,9 +78,9 @@ enum GoalPriority: Int, Codable, CaseIterable, Comparable, Identifiable {
 
     var label: String {
         switch self {
-        case .low:    "低"
-        case .medium: "中"
-        case .high:   "高"
+        case .low:    String(localized: "低")
+        case .medium: String(localized: "中")
+        case .high:   String(localized: "高")
         }
     }
 
@@ -82,4 +93,12 @@ enum GoalStatus: String, Codable {
     case active
     case completed
     case archived
+
+    var localizedName: String {
+        switch self {
+        case .active:    String(localized: "アクティブ")
+        case .completed: String(localized: "完了")
+        case .archived:  String(localized: "アーカイブ")
+        }
+    }
 }

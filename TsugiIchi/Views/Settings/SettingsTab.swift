@@ -23,7 +23,10 @@ struct SettingsTab: View {
     @State private var exportCSV: String = ""
     @State private var exportFileName: String = ""
 
-    private let weekdayNames = ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"]
+    private var weekdayNames: [String] {
+        [String(localized: "日曜日"), String(localized: "月曜日"), String(localized: "火曜日"),
+         String(localized: "水曜日"), String(localized: "木曜日"), String(localized: "金曜日"), String(localized: "土曜日")]
+    }
     // weekday values: 1=Sun, 2=Mon, ..., 7=Sat
     private let weekdayValues = [1, 2, 3, 4, 5, 6, 7]
 
@@ -50,7 +53,7 @@ struct SettingsTab: View {
 
                         Picker("分", selection: $notificationMinute) {
                             ForEach([0, 15, 30, 45], id: \.self) { m in
-                                Text(String(format: "%02d分", m)).tag(m)
+                                Text("\(String(format: "%02d", m))\(String(localized: "分"))").tag(m)
                             }
                         }
                         .pickerStyle(.menu)
