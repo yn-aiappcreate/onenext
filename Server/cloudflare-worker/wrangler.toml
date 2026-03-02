@@ -17,7 +17,7 @@ RATE_LIMIT_PER_MINUTE = "10"
 # アプリの Bundle ID（Apple JWS 検証で使用）
 BUNDLE_ID = "com.ynlabs.tsugiichi"
 # Pro サブスクリプションの Product ID
-PRO_PRODUCT_ID = "tsugiichi.pro.monthly"
+PRO_PRODUCT_ID = "com.ynlabs.tsugiichi.pro.monthly"
 
 # KV Namespace for credit tracking (M11)
 # ⠀⠀wrangler kv:namespace create CREDITS_KV ⠀で作成後、id を以下に貼る

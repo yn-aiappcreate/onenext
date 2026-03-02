@@ -104,20 +104,21 @@ App Store Connect の「App Privacy」で以下の申告が必要です:
 
 | 商品ID | タイプ | 内容 |
 |---|---|---|
-| `tsugiichi.pro.monthly` | 自動更新サブスクリプション | Proプラン（AI 300回/30日） |
-| `tsugiichi.ai.pack300` | 消耗型 | AI追加パック +300回（期限なし） |
+| `com.ynlabs.tsugiichi.pro.monthly` | 自動更新サブスクリプション | Proプラン月額（AI 300回/30日） |
+| `com.ynlabs.tsugiichi.pro.yearly` | 自動更新サブスクリプション | Proプラン年額（AI 300回/30日） |
+| `com.ynlabs.tsugiichi.ai.pack300` | 消耗型 | AI追加パック +300回（期限なし） |
 
 ### App Store Connect でのIAP作成手順
 
 1. [App Store Connect](https://appstoreconnect.apple.com/) → アプリ → ツギイチ → **サブスクリプション**
 2. **サブスクリプショングループを作成**: 名前=「TsugiIchi Pro」
 3. **サブスクリプションを追加**:
-   - 参照名: `tsugiichi.pro.monthly`
+   - 参照名: `com.ynlabs.tsugiichi.pro.monthly`
    - 期間: 1か月
    - ローカライズ: 「ツギイチ Pro」/ 「AIステップ生成 300回/月」
    - 価格を設定（例: ¥480/月）
 4. **App内課金** → **消耗型を作成**:
-   - 参照名: `tsugiichi.ai.pack300`
+   - 参照名: `com.ynlabs.tsugiichi.ai.pack300`
    - ローカライズ: 「AI追加パック」/ 「AIステップ生成 +300回」
    - 価格を設定（例: ¥240）
 5. 両方のステータスが **「完了」** または **「審査待ち」** になったことを確認
