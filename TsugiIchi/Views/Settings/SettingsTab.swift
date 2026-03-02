@@ -4,7 +4,7 @@ import SwiftData
 struct SettingsTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
-    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
 
     // MARK: - 通知設定
     @AppStorage("notificationWeekday") private var notificationWeekday: Int = 1   // 1=日曜

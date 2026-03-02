@@ -1,5 +1,6 @@
 import EventKit
 import Foundation
+import UIKit
 
 /// Manages synchronization between PlanSlot steps and the iOS Calendar app.
 enum CalendarService {
@@ -127,7 +128,7 @@ enum CalendarService {
         guard isAuthorized else { return }
         guard let eventId = loadEventId(for: stepId) else { return }
         guard let event = store.event(withIdentifier: eventId) else { return }
-        if !event.title.hasPrefix("[DONE] ") {
+        if event.title?.hasPrefix("[DONE] ") != true {
             event.title = "[DONE] \(event.title ?? "")"
         }
         do {
