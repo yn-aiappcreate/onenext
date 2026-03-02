@@ -4,9 +4,9 @@ import StoreKit
 // MARK: - Product identifiers
 
 enum BillingProduct: String, CaseIterable {
-    case proMonthly = "tsugiichi.pro.monthly"
-    case proYearly  = "tsugiichi.pro.yearly"
-    case aiPack300  = "tsugiichi.ai.pack300"
+    case proMonthly = "com.ynlabs.tsugiichi.pro.monthly"
+    case proYearly  = "com.ynlabs.tsugiichi.pro.yearly"
+    case aiPack300  = "com.ynlabs.tsugiichi.ai.pack300"
 }
 
 // MARK: - BillingManager

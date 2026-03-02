@@ -36,7 +36,7 @@ Transaction.currentEntitlements
 ## 前提条件
 
 1. **App Store Connect でサブスクリプションが作成済み**
-   - Product ID: `tsugiichi.pro.monthly`（自動更新サブスクリプション）
+   - Product ID: `com.ynlabs.tsugiichi.pro.monthly`（自動更新サブスクリプション）
    - README の「サブスクリプション / AIクレジット (IAP)」セクション参照
 
 2. **Cloudflare Worker がデプロイ済み**（M11 の KV 含む）
@@ -54,7 +54,7 @@ Transaction.currentEntitlements
 ```toml
 [vars]
 BUNDLE_ID = "com.ynlabs.tsugiichi"
-PRO_PRODUCT_ID = "tsugiichi.pro.monthly"
+PRO_PRODUCT_ID = "com.ynlabs.tsugiichi.pro.monthly"
 ```
 
 - `BUNDLE_ID`: App Store Connect で登録したアプリの Bundle ID

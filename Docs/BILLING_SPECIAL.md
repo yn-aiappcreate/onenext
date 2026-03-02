@@ -29,8 +29,9 @@
 ## 商品ID（App Store Connectで作成する）
 | 種別 | Product ID | 備考 |
 |---|---|---|
-| サブスク（月額） | tsugiichi.pro.monthly | 自動更新 |
-| 消耗型 | tsugiichi.ai.pack300 | +300回 |
+| サブスク（月額） | com.ynlabs.tsugiichi.pro.monthly | 自動更新 |
+| サブスク（年額） | com.ynlabs.tsugiichi.pro.yearly | 自動更新 |
+| 消耗型 | com.ynlabs.tsugiichi.ai.pack300 | +300回 |
 
 ※将来の上位プランは later（例 tsugiichi.proplus.monthly）
 

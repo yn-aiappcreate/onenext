@@ -234,7 +234,7 @@ function checkProStatus(payload, proProductId) {
 async function determineProStatus(request, clientId, env) {
   const signedTransaction = (request.headers.get("X-Signed-Transaction") || "").trim();
   const bundleId = env.BUNDLE_ID || "";
-  const proProductId = env.PRO_PRODUCT_ID || "tsugiichi.pro.monthly";
+  const proProductId = env.PRO_PRODUCT_ID || "com.ynlabs.tsugiichi.pro.monthly";
 
   // 1. Try server-side JWS verification
   if (signedTransaction) {
