@@ -9,6 +9,9 @@ struct GoalDetailView: View {
     @State private var showTemplatePicker = false
     @State private var showRegenerateConfirm = false
     @State private var showAddStepSheet = false
+    @State private var showAIStepSheet = false
+
+    @AppStorage("aiAssistEnabled") private var aiAssistEnabled = true
 
     private var doneCount: Int {
         goal.steps.filter { $0.status == .done }.count
@@ -121,6 +124,14 @@ struct GoalDetailView: View {
                 } label: {
                     Label("Stepを手動追加", systemImage: "plus.circle")
                 }
+
+                if aiAssistEnabled {
+                    Button {
+                        showAIStepSheet = true
+                    } label: {
+                        Label("AIでステップ案を作る", systemImage: "cpu")
+                    }
+                }
             } header: {
                 HStack {
                     Text("ステップ")
@@ -167,6 +178,9 @@ struct GoalDetailView: View {
         }
         .sheet(isPresented: $showAddStepSheet) {
             ManualStepSheet(goal: goal)
+        }
+        .sheet(isPresented: $showAIStepSheet) {
+            AIStepSheet(goal: goal)
         }
     }
 
@@ -237,6 +251,13 @@ private struct StepRow: View {
                             .padding(.horizontal, 4)
                             .padding(.vertical, 1)
                             .background(.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 3))
+                    } else if step.type == .ai {
+                        Text("AI生成")
+                            .font(.caption2)
+                            .foregroundStyle(.purple)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(.purple.opacity(0.15), in: RoundedRectangle(cornerRadius: 3))
                     }
                     if isScheduled {
                         Text("今週枠")
