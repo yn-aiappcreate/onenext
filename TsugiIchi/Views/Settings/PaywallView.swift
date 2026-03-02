@@ -70,58 +70,55 @@ struct PaywallView: View {
                     .padding(.vertical, 8)
 
                     // MARK: - Products
-                    if billing.products.isEmpty {
-                        ProgressView("商品を読み込み中...")
+                    VStack(spacing: 12) {
+                        if entitlements.isPro {
+                            // Already subscribed - show current plan
+                            HStack {
+                                Image(systemName: "checkmark.seal.fill")
+                                    .foregroundStyle(.green)
+                                Text(entitlements.activeProductId == BillingProduct.proYearly.rawValue
+                                     ? "Pro（年額）プラン利用中"
+                                     : "Pro（月額）プラン利用中")
+                                    .font(.headline)
+                                    .foregroundStyle(.green)
+                            }
                             .padding()
-                    } else {
-                        VStack(spacing: 12) {
-                            if entitlements.isPro {
-                                // Already subscribed - show current plan
-                                HStack {
-                                    Image(systemName: "checkmark.seal.fill")
-                                        .foregroundStyle(.green)
-                                    Text(entitlements.activeProductId == BillingProduct.proYearly.rawValue
-                                         ? "Pro（年額）プラン利用中"
-                                         : "Pro（月額）プラン利用中")
-                                        .font(.headline)
-                                        .foregroundStyle(.green)
-                                }
-                                .padding()
 
-                                // Show upgrade option: monthly → yearly only
-                                if entitlements.activeProductId == BillingProduct.proMonthly.rawValue {
-                                    YearlyProductButton {
-                                        if let yearly = billing.proYearlyProduct {
-                                            Task { await billing.purchase(yearly) }
-                                        }
-                                    }
-                                }
-                            } else {
-                                // Not subscribed - show both options
-                                // Yearly plan (recommended)
+                            // Show upgrade option: monthly → yearly only
+                            if entitlements.activeProductId == BillingProduct.proMonthly.rawValue {
                                 YearlyProductButton {
                                     if let yearly = billing.proYearlyProduct {
                                         Task { await billing.purchase(yearly) }
                                     }
                                 }
-                                // Monthly plan
-                                MonthlyProductButton {
-                                    if let monthly = billing.proMonthlyProduct {
-                                        Task { await billing.purchase(monthly) }
-                                    }
+                            }
+
+                            // AI pack always visible for Pro users
+                            PackProductButton {
+                                if let pack = billing.packProduct {
+                                    Task { await billing.purchase(pack) }
                                 }
                             }
-                            // AI pack available for Pro users
-                            if entitlements.isPro {
-                                PackProductButton {
-                                    if let pack = billing.packProduct {
-                                        Task { await billing.purchase(pack) }
-                                    }
+                        } else if billing.products.isEmpty {
+                            ProgressView("商品を読み込み中...")
+                                .padding()
+                        } else {
+                            // Not subscribed - show both options
+                            // Yearly plan (recommended)
+                            YearlyProductButton {
+                                if let yearly = billing.proYearlyProduct {
+                                    Task { await billing.purchase(yearly) }
+                                }
+                            }
+                            // Monthly plan
+                            MonthlyProductButton {
+                                if let monthly = billing.proMonthlyProduct {
+                                    Task { await billing.purchase(monthly) }
                                 }
                             }
                         }
-                        .padding(.horizontal)
                     }
+                    .padding(.horizontal)
 
                     // MARK: - Error
                     if let error = billing.purchaseError {
