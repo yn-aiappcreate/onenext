@@ -5,6 +5,7 @@ import StoreKit
 
 enum BillingProduct: String, CaseIterable {
     case proMonthly = "tsugiichi.pro.monthly"
+    case proYearly  = "tsugiichi.pro.yearly"
     case aiPack300  = "tsugiichi.ai.pack300"
 }
 
@@ -49,8 +50,13 @@ final class BillingManager: ObservableObject {
     }
 
     /// Convenience accessor for the Pro monthly product.
-    var proProduct: Product? {
+    var proMonthlyProduct: Product? {
         products.first { $0.id == BillingProduct.proMonthly.rawValue }
+    }
+
+    /// Convenience accessor for the Pro yearly product.
+    var proYearlyProduct: Product? {
+        products.first { $0.id == BillingProduct.proYearly.rawValue }
     }
 
     /// Convenience accessor for the AI pack product.

@@ -47,12 +47,6 @@ struct PaywallView: View {
                             subtitle: "+300回のAIクレジット（期限なし）"
                         )
                         ProFeatureRow(
-                            icon: "calendar",
-                            color: .green,
-                            title: "カレンダー書き出し",
-                            subtitle: "Stepをカレンダーに同期"
-                        )
-                        ProFeatureRow(
                             icon: "infinity",
                             color: .orange,
                             title: "無制限のGoal",
@@ -67,9 +61,19 @@ struct PaywallView: View {
                             .padding()
                     } else {
                         VStack(spacing: 12) {
-                            if let pro = billing.proProduct {
-                                ProductButton(product: pro, label: "Pro（月額）") {
-                                    Task { await billing.purchase(pro) }
+                            // Yearly plan (recommended)
+                            if let yearly = billing.proYearlyProduct {
+                                YearlyProductButton(
+                                    product: yearly,
+                                    monthlyProduct: billing.proMonthlyProduct
+                                ) {
+                                    Task { await billing.purchase(yearly) }
+                                }
+                            }
+                            // Monthly plan
+                            if let monthly = billing.proMonthlyProduct {
+                                ProductButton(product: monthly, label: "Pro（月額）") {
+                                    Task { await billing.purchase(monthly) }
                                 }
                             }
                             if let pack = billing.packProduct {
@@ -241,10 +245,86 @@ private struct ProductButton: View {
     }
 
     private var periodSuffix: String {
-        if product.type == .autoRenewable {
-            return " / 月"
+        guard product.type == .autoRenewable,
+              let subscription = product.subscription else {
+            return ""
         }
-        return ""
+        switch subscription.subscriptionPeriod.unit {
+        case .year:  return " / 年"
+        case .month: return " / 月"
+        case .week:  return " / 週"
+        case .day:   return " / 日"
+        @unknown default: return ""
+        }
+    }
+}
+
+// MARK: - YearlyProductButton
+
+private struct YearlyProductButton: View {
+    let product: Product
+    let monthlyProduct: Product?
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            Text("Pro（年額）")
+                                .font(.headline)
+                            Text("おすすめ")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.orange, in: RoundedRectangle(cornerRadius: 4))
+                        }
+                        Text(product.displayPrice + " / 年")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                // Discount display
+                if let monthly = monthlyProduct {
+                    HStack(spacing: 4) {
+                        Text(monthly.displayPrice + "/月")
+                            .font(.caption)
+                            .strikethrough()
+                            .foregroundStyle(.secondary)
+                        Text("→")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(monthlyEquivalent + "/月")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.orange)
+                    }
+                }
+            }
+            .padding()
+            .background(Color.orange.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Calculate the monthly equivalent price of the yearly subscription.
+    private var monthlyEquivalent: String {
+        let perMonth = product.price / 12
+        // Use the same format style as the product's displayPrice
+        return perMonth.formatted(product.priceFormatStyle)
     }
 }
 

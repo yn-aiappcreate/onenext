@@ -4,8 +4,10 @@ import SwiftData
 struct BacklogTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Goal.createdAt, order: .reverse) private var goals: [Goal]
+    @ObservedObject private var entitlements = EntitlementStore.shared
 
     @State private var showCreateSheet = false
+    @State private var showPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -31,7 +33,11 @@ struct BacklogTab: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        showCreateSheet = true
+                        if !entitlements.isPro && activeGoalCount >= SubscriptionManager.freeGoalLimit {
+                            showPaywall = true
+                        } else {
+                            showCreateSheet = true
+                        }
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -43,7 +49,15 @@ struct BacklogTab: View {
             .sheet(isPresented: $showCreateSheet) {
                 GoalFormSheet()
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
+            }
         }
+    }
+
+    /// Count of active (non-completed) goals for free tier limit check.
+    private var activeGoalCount: Int {
+        goals.filter { $0.status != .completed }.count
     }
 
     private func deleteGoals(at offsets: IndexSet) {
