@@ -111,6 +111,7 @@
 		A6008C347D80505980DB8174 /* TemplateEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateEngineTests.swift; sourceTree = "<group>"; };
 		533E02662A195F7293225DA9 /* DateHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelperTests.swift; sourceTree = "<group>"; };
 		W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TsugiIchiWidget.swift; sourceTree = "<group>"; };
+		WIPLIST0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TsugiIchiWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -152,6 +153,7 @@
 		W8D8A8B8C8D8E8F808182838 /* TsugiIchiWidget */ = {
 			isa = PBXGroup;
 			children = (
+				WIPLIST0000000000000001 /* Info.plist */,
 				W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */,
 			);
 			path = TsugiIchiWidget;
@@ -795,6 +797,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TsugiIchiWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TsugiIchiWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -819,6 +822,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TsugiIchiWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TsugiIchiWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
