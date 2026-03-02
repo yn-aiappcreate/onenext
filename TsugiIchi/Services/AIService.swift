@@ -50,7 +50,7 @@ enum AIService {
             throw AIServiceError.proxyURLMissing
         }
 
-        let url = baseURL.appendingPathComponent("api/v1/steps/generate")
+        let url = baseURL.appendingPathComponent("generate-steps")
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
