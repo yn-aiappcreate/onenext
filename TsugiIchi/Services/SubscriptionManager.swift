@@ -137,8 +137,8 @@ extension SubscriptionManager {
         }
     }
 
-    /// Free tier allows up to 3 active goals.
-    static let freeGoalLimit = 3
+    /// Free tier allows up to 5 active goals.
+    static let freeGoalLimit = 5
 
     /// Check if the user can use a Pro feature.
     /// Returns `true` if subscribed or if the feature doesn't require Pro.

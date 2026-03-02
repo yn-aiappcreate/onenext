@@ -26,7 +26,8 @@ final class EntitlementStore: ObservableObject {
 
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result else { continue }
-            if transaction.productID == BillingProduct.proMonthly.rawValue {
+            if transaction.productID == BillingProduct.proMonthly.rawValue
+                || transaction.productID == BillingProduct.proYearly.rawValue {
                 // Check the subscription hasn't been revoked
                 if transaction.revocationDate == nil {
                     foundPro = true
