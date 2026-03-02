@@ -9,6 +9,7 @@ enum AIServiceError: LocalizedError {
     case invalidJSON(underlying: Error)
     case emptySteps
     case proxyURLMissing
+    case creditsExhausted
 
     var errorDescription: String? {
         switch self {
@@ -27,6 +28,8 @@ enum AIServiceError: LocalizedError {
             return String(localized: "ステップを生成できませんでした")
         case .proxyURLMissing:
             return String(localized: "AIエンドポイントURLが設定されていません")
+        case .creditsExhausted:
+            return String(localized: "AIクレジットの残りがありません")
         }
     }
 }
@@ -36,16 +39,22 @@ enum AIServiceError: LocalizedError {
 /// Handles communication with the AI proxy endpoint.
 enum AIService {
 
+    /// Result returned by `generateSteps`, containing both the steps and optional remaining credits.
+    struct GenerateResult {
+        let steps: [AIStepResult]
+        let remaining: Int?
+    }
+
     /// Generate Step suggestions by calling the proxy endpoint.
     /// - Parameters:
     ///   - payload: The request payload (goal info).
     ///   - endpointURL: The proxy base URL string.
-    /// - Returns: An array of AI step suggestions.
+    /// - Returns: A `GenerateResult` containing AI step suggestions and optional remaining credits.
     static func generateSteps(
         payload: AIRequestPayload,
         endpointURL: String,
         authToken: String = ""
-    ) async throws -> [AIStepResult] {
+    ) async throws -> GenerateResult {
         guard let baseURL = URL(string: endpointURL),
               !endpointURL.trimmingCharacters(in: .whitespaces).isEmpty else {
             throw AIServiceError.proxyURLMissing
@@ -62,6 +71,8 @@ enum AIService {
         // Send device preferred language so the Worker can generate prompts in the right language
         let preferredLang = Locale.preferredLanguages.first ?? "ja"
         request.setValue(preferredLang, forHTTPHeaderField: "Accept-Language")
+        // Send client ID for credit tracking (M11+ Proxy will use this)
+        request.setValue(ClientId.current, forHTTPHeaderField: "X-Client-Id")
         request.timeoutInterval = 30
 
         let encoder = JSONEncoder()
@@ -86,6 +97,8 @@ enum AIService {
             let retryAfter = httpResponse.value(forHTTPHeaderField: "Retry-After")
                 .flatMap { Int($0) }
             throw AIServiceError.rateLimited(retryAfter: retryAfter)
+        case 403:
+            throw AIServiceError.creditsExhausted
         case 400...499:
             throw AIServiceError.serverError(statusCode: httpResponse.statusCode)
         default:
@@ -104,6 +117,6 @@ enum AIService {
             throw AIServiceError.emptySteps
         }
 
-        return decoded.steps
+        return GenerateResult(steps: decoded.steps, remaining: decoded.remaining)
     }
 }

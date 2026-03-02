@@ -62,8 +62,9 @@ xcodebuild test \
 
 - **UI**: SwiftUI (TabView 4タブ: Backlog / Plan / Review / Settings)
 - **永続化**: SwiftData (Goal, Step, PlanSlot, ReviewLog)
+- **課金**: StoreKit 2 (Proサブスク + AIクレジットパック)
 - **状態管理**: @Observable ViewModel + @Query
-- **外部依存**: なし (SwiftUI + SwiftData のみ)
+- **外部依存**: なし (SwiftUI + SwiftData + StoreKit 2 のみ)
 
 ## AIアシスト（Step分解）
 
@@ -97,6 +98,54 @@ App Store Connect の「App Privacy」で以下の申告が必要です:
 - **サードパーティ共有**: あり（AI APIプロバイダ）
 - **位置情報・連絡先**: 収集しない
 
+## サブスクリプション / AIクレジット (IAP)
+
+### 商品ID
+
+| 商品ID | タイプ | 内容 |
+|---|---|---|
+| `tsugiichi.pro.monthly` | 自動更新サブスクリプション | Proプラン（AI 300回/30日） |
+| `tsugiichi.ai.pack300` | 消耗型 | AI追加パック +300回（期限なし） |
+
+### App Store Connect でのIAP作成手順
+
+1. [App Store Connect](https://appstoreconnect.apple.com/) → アプリ → ツギイチ → **サブスクリプション**
+2. **サブスクリプショングループを作成**: 名前=「TsugiIchi Pro」
+3. **サブスクリプションを追加**:
+   - 参照名: `tsugiichi.pro.monthly`
+   - 期間: 1か月
+   - ローカライズ: 「ツギイチ Pro」/ 「AIステップ生成 300回/月」
+   - 価格を設定（例: ¥480/月）
+4. **App内課金** → **消耗型を作成**:
+   - 参照名: `tsugiichi.ai.pack300`
+   - ローカライズ: 「AI追加パック」/ 「AIステップ生成 +300回」
+   - 価格を設定（例: ¥240）
+5. 両方のステータスが **「完了」** または **「審査待ち」** になったことを確認
+
+### Sandboxテスト手順
+
+1. **Sandboxテスターアカウント作成**:
+   - App Store Connect → ユーザとアクセス → Sandbox → テスター → 「+」
+   - テスト用のメールアドレスとパスワードを設定
+2. **実機でテスト** (Sandboxはシミュレータ非対応):
+   - Settings.app → App Store → 下部「SANDBOX ACCOUNT」にテスターでサインイン
+   - またはアプリ内で購入ボタン押下時にSandboxアカウントでサインイン
+3. **確認事項**:
+   - Sandboxではサブスクの更新間隔が短縮されます（1か月 → 5分）
+   - 購入後、設定画面で「Pro プラン利用中」と表示されることを確認
+   - AI分解時にクレジット消費がカウントされることを確認
+   - 「購入を復元」ボタンが動作することを確認
+
+### AIクレジット仕様
+
+| プラン | 月次枠 | リセットサイクル | 購入枠 |
+|---|---|---|---|
+| Free | 10回/30日 | 初回AI使用時からローリング | 不可 |
+| Pro | 300回/30日 | Pro開始時からローリング | +300回/パック |
+
+- 消費順：月次枠 → 購入枠（購入枠は期限なし）
+- 枠切れ時はPaywall表示（テンプレート生成は常に可能）
+
 ## プロジェクト構成
 
 ```
@@ -104,11 +153,12 @@ TsugiIchi/
 ├── App/              # @main エントリポイント, ContentView (TabView)
 ├── Models/           # SwiftData モデル (Goal, Step, PlanSlot, ReviewLog, AIModels)
 ├── Views/            # タブごとの View (Backlog, Plan, Review, Settings, AI)
-│   └── AI/           # AIStepSheet, AIConsentView
-├── Services/         # TemplateEngine, AIService, Redactor, NotificationManager
-└── Utilities/        # DateHelper, Constants
+│   ├── AI/           # AIStepSheet, AIConsentView
+│   └── Settings/     # SettingsTab, PaywallView
+├── Services/         # TemplateEngine, AIService, BillingManager, EntitlementStore, CreditsStore
+└── Utilities/        # DateHelper, Constants, ClientId
 TsugiIchiTests/       # XCTest ユニットテスト
-Docs/                 # PRD, MVP_SCOPE, ARCHITECTURE, AI_ASSIST_SPEC 等
+Docs/                 # PRD, MVP_SCOPE, ARCHITECTURE, BILLING_SPEC 等
 ```
 
 ## ライセンス

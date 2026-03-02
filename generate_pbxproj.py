@@ -17,6 +17,10 @@ for key in [
     "fr_onboarding_view",
     "fr_ai_models", "fr_ai_service", "fr_redactor",
     "fr_ai_consent_view", "fr_ai_step_sheet",
+    "fr_billing_manager", "fr_entitlement_store", "fr_credits_store",
+    "fr_client_id", "fr_paywall_view",
+    "fr_calendar_service", "fr_subscription_manager",
+    "fr_localizable_xcstrings",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
 ]:
@@ -33,6 +37,10 @@ for key in [
     "bf_onboarding_view",
     "bf_ai_models", "bf_ai_service", "bf_redactor",
     "bf_ai_consent_view", "bf_ai_step_sheet",
+    "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
+    "bf_client_id", "bf_paywall_view",
+    "bf_calendar_service", "bf_subscription_manager",
+    "bf_localizable_xcstrings",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
     ids[key] = make_id(key)
@@ -43,7 +51,7 @@ for key in [
     "gr_backlog", "gr_plan", "gr_review", "gr_settings", "gr_components",
     "gr_services", "gr_utilities", "gr_preview", "gr_tests", "gr_products",
     "gr_onboarding",
-    "gr_ai",
+    "gr_ai", "gr_resources",
     "tg_app", "tg_tests",
     "bp_app_sources", "bp_app_frameworks", "bp_app_resources",
     "bp_tests_sources", "bp_tests_frameworks", "bp_tests_resources",
@@ -81,6 +89,14 @@ bf_to_fr = {
     "bf_redactor": ("fr_redactor", "Redactor.swift"),
     "bf_ai_consent_view": ("fr_ai_consent_view", "AIConsentView.swift"),
     "bf_ai_step_sheet": ("fr_ai_step_sheet", "AIStepSheet.swift"),
+    "bf_billing_manager": ("fr_billing_manager", "BillingManager.swift"),
+    "bf_entitlement_store": ("fr_entitlement_store", "EntitlementStore.swift"),
+    "bf_credits_store": ("fr_credits_store", "CreditsStore.swift"),
+    "bf_client_id": ("fr_client_id", "ClientId.swift"),
+    "bf_paywall_view": ("fr_paywall_view", "PaywallView.swift"),
+    "bf_calendar_service": ("fr_calendar_service", "CalendarService.swift"),
+    "bf_subscription_manager": ("fr_subscription_manager", "SubscriptionManager.swift"),
+    "bf_localizable_xcstrings": ("fr_localizable_xcstrings", "Localizable.xcstrings"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
     "bf_datehelper_tests": ("fr_datehelper_tests", "DateHelperTests.swift"),
@@ -95,8 +111,11 @@ app_sources = [
     "bf_empty_state", "bf_onboarding_view",
     "bf_ai_models", "bf_ai_service", "bf_redactor",
     "bf_ai_consent_view", "bf_ai_step_sheet",
+    "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
+    "bf_client_id", "bf_paywall_view",
+    "bf_calendar_service", "bf_subscription_manager",
 ]
-app_resources = ["bf_assets"]
+app_resources = ["bf_assets", "bf_localizable_xcstrings"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
 
 # Helper
@@ -162,6 +181,14 @@ fr_info = [
     ("fr_redactor", "lastKnownFileType = sourcecode.swift", "Redactor.swift", '"<group>"'),
     ("fr_ai_consent_view", "lastKnownFileType = sourcecode.swift", "AIConsentView.swift", '"<group>"'),
     ("fr_ai_step_sheet", "lastKnownFileType = sourcecode.swift", "AIStepSheet.swift", '"<group>"'),
+    ("fr_billing_manager", "lastKnownFileType = sourcecode.swift", "BillingManager.swift", '"<group>"'),
+    ("fr_entitlement_store", "lastKnownFileType = sourcecode.swift", "EntitlementStore.swift", '"<group>"'),
+    ("fr_credits_store", "lastKnownFileType = sourcecode.swift", "CreditsStore.swift", '"<group>"'),
+    ("fr_client_id", "lastKnownFileType = sourcecode.swift", "ClientId.swift", '"<group>"'),
+    ("fr_paywall_view", "lastKnownFileType = sourcecode.swift", "PaywallView.swift", '"<group>"'),
+    ("fr_calendar_service", "lastKnownFileType = sourcecode.swift", "CalendarService.swift", '"<group>"'),
+    ("fr_subscription_manager", "lastKnownFileType = sourcecode.swift", "SubscriptionManager.swift", '"<group>"'),
+    ("fr_localizable_xcstrings", "lastKnownFileType = text.json.xcstrings", "Localizable.xcstrings", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
     ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
@@ -223,6 +250,7 @@ write_group("gr_onenext", "TsugiIchi", [
     ("gr_views", "Views"),
     ("gr_services", "Services"),
     ("gr_utilities", "Utilities"),
+    ("gr_resources", "Resources"),
 ], path="TsugiIchi")
 
 write_group("gr_app", "App", [
@@ -267,9 +295,13 @@ write_group("gr_components", "Components", [
 for grp, fr, fname, path in [
     ("gr_plan", "fr_plan_tab", "PlanTab.swift", "Plan"),
     ("gr_review", "fr_review_tab", "ReviewTab.swift", "Review"),
-    ("gr_settings", "fr_settings_tab", "SettingsTab.swift", "Settings"),
 ]:
     write_group(grp, path, [(fr, fname)], path=path)
+
+write_group("gr_settings", "Settings", [
+    ("fr_settings_tab", "SettingsTab.swift"),
+    ("fr_paywall_view", "PaywallView.swift"),
+], path="Settings")
 
 write_group("gr_onboarding", "Onboarding", [
     ("fr_onboarding_view", "OnboardingView.swift"),
@@ -286,12 +318,22 @@ write_group("gr_services", "Services", [
     ("fr_csv_exporter", "CSVExporter.swift"),
     ("fr_ai_service", "AIService.swift"),
     ("fr_redactor", "Redactor.swift"),
+    ("fr_billing_manager", "BillingManager.swift"),
+    ("fr_entitlement_store", "EntitlementStore.swift"),
+    ("fr_credits_store", "CreditsStore.swift"),
+    ("fr_calendar_service", "CalendarService.swift"),
+    ("fr_subscription_manager", "SubscriptionManager.swift"),
 ], path="Services")
 
 write_group("gr_utilities", "Utilities", [
     ("fr_date_helper", "DateHelper.swift"),
     ("fr_constants", "Constants.swift"),
+    ("fr_client_id", "ClientId.swift"),
 ], path="Utilities")
+
+write_group("gr_resources", "Resources", [
+    ("fr_localizable_xcstrings", "Localizable.xcstrings"),
+], path="Resources")
 
 write_group("gr_tests", "TsugiIchiTests", [
     ("fr_model_tests", "ModelTests.swift"),
@@ -372,6 +414,12 @@ w(f"\t\t\tdevelopmentRegion = ja;")
 w(f"\t\t\thasScannedForEncodings = 0;")
 w(f"\t\t\tknownRegions = (")
 w(f"\t\t\t\tja,")
+w(f"\t\t\t\ten,")
+w(f"\t\t\t\tzh-Hans,")
+w(f"\t\t\t\tko,")
+w(f"\t\t\t\tes,")
+w(f"\t\t\t\tfr,")
+w(f"\t\t\t\tde,")
 w(f"\t\t\t\tBase,")
 w(f"\t\t\t);")
 w(f"\t\t\tmainGroup = {I('gr_main')};")
@@ -392,7 +440,9 @@ w(f"\t\t{I('bp_app_resources')} /* Resources */ = {{")
 w(f"\t\t\tisa = PBXResourcesBuildPhase;")
 w(f"\t\t\tbuildActionMask = 2147483647;")
 w(f"\t\t\tfiles = (")
-w(f"\t\t\t\t{I('bf_assets')} /* Assets.xcassets in Resources */,")
+for bf in app_resources:
+    _, name = bf_to_fr[bf]
+    w(f"\t\t\t\t{I(bf)} /* {name} in Resources */,")
 w(f"\t\t\t);")
 w(f"\t\t\trunOnlyForDeploymentPostprocessing = 0;")
 w(f"\t\t}};")
@@ -546,6 +596,7 @@ app_settings = [
     "INFOPLIST_KEY_UILaunchScreen_Generation = YES;",
     '"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";',
     '"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";',
+    'INFOPLIST_KEY_NSCalendarsUsageDescription = "\\U30c4\\U30ae\\U30a4\\U30c1\\U306f\\U3001\\U30d7\\U30e9\\U30f3\\U306e\\U30b9\\U30c6\\U30c3\\U30d7\\U3092\\U30ab\\U30ec\\U30f3\\U30c0\\U30fc\\U306b\\U540c\\U671f\\U3059\\U308b\\U305f\\U3081\\U306b\\U30ab\\U30ec\\U30f3\\U30c0\\U30fc\\U3078\\U306e\\U30a2\\U30af\\U30bb\\U30b9\\U304c\\U5fc5\\U8981\\U3067\\U3059\\U3002";',
     "MARKETING_VERSION = 1.0;",
     "PRODUCT_BUNDLE_IDENTIFIER = com.ynlabs.tsugiichi;",
     '"PRODUCT_NAME" = "$(TARGET_NAME)";',

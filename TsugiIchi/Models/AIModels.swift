@@ -15,6 +15,18 @@ struct AIRequestPayload: Codable {
 /// Top-level response from the AI proxy.
 struct AIResponse: Codable {
     let steps: [AIStepResult]
+    /// Remaining AI credits returned by the Proxy (M11+). Nil when Proxy doesn't support it yet.
+    let remaining: Int?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.steps = try container.decode([AIStepResult].self, forKey: .steps)
+        self.remaining = try container.decodeIfPresent(Int.self, forKey: .remaining)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case steps, remaining
+    }
 }
 
 /// A single Step suggestion returned by AI.

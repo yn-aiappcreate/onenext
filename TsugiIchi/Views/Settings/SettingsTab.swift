@@ -6,6 +6,10 @@ struct SettingsTab: View {
     @Query private var allGoals: [Goal]
     @ObservedObject private var subscriptionManager = SubscriptionManager.shared
 
+    @ObservedObject private var billing = BillingManager.shared
+    @ObservedObject private var entitlements = EntitlementStore.shared
+    @ObservedObject private var credits = CreditsStore.shared
+
     // MARK: - 通知設定
     @AppStorage("notificationWeekday") private var notificationWeekday: Int = 1   // 1=日曜
     @AppStorage("notificationHour") private var notificationHour: Int = 20
@@ -26,6 +30,8 @@ struct SettingsTab: View {
     @State private var showExportSheet = false
     @State private var exportCSV: String = ""
     @State private var exportFileName: String = ""
+
+    // MARK: - Paywall
     @State private var showPaywall = false
 
     private var weekdayNames: [String] {
@@ -123,6 +129,75 @@ struct SettingsTab: View {
                     Text("AIステップ生成には、自前のプロキシサーバーが必要です。APIキーはアプリに埋め込まれていません。")
                 }
 
+                // MARK: - サブスクリプション / クレジット
+                Section {
+                    // Pro status
+                    HStack {
+                        Image(systemName: entitlements.isPro ? "star.circle.fill" : "star.circle")
+                            .foregroundStyle(entitlements.isPro ? .yellow : .secondary)
+                        Text(entitlements.isPro ? "Pro プラン利用中" : "Free プラン")
+                            .fontWeight(.semibold)
+                        Spacer()
+                        if !entitlements.isPro {
+                            Button("アップグレード") {
+                                showPaywall = true
+                            }
+                            .font(.caption)
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                        }
+                    }
+
+                    // Credits display
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("AI残クレジット")
+                                .font(.subheadline)
+                            Spacer()
+                            Text("\(credits.totalRemaining)回")
+                                .font(.headline)
+                                .foregroundStyle(credits.totalRemaining > 0 ? .primary : .red)
+                        }
+                        HStack(spacing: 16) {
+                            Label("月次枠: \(credits.monthlyRemaining)/\(credits.monthlyLimit)",
+                                  systemImage: "calendar.circle")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            if credits.purchasedCredits > 0 {
+                                Label("購入枠: \(credits.purchasedCredits)",
+                                      systemImage: "bag.circle")
+                                    .font(.caption)
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+                    }
+
+                    // Purchase pack
+                    if !billing.products.isEmpty {
+                        Button {
+                            showPaywall = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "bag.badge.plus")
+                                    .foregroundStyle(.blue)
+                                Text("AI追加パックを購入")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
+                    // Restore purchases
+                    Button("購入を復元") {
+                        Task { await billing.restorePurchases() }
+                    }
+                    .font(.footnote)
+                } header: {
+                    Text("サブスクリプション")
+                }
+
                 // MARK: - カレンダー連携
                 Section {
                     Toggle("カレンダー同期", isOn: $calendarSyncEnabled)
@@ -157,41 +232,6 @@ struct SettingsTab: View {
                     }
                 }
 
-                // MARK: - サブスクリプション
-                Section {
-                    if subscriptionManager.isProUser {
-                        HStack {
-                            Image(systemName: "star.circle.fill")
-                                .foregroundStyle(.yellow)
-                            Text("Pro プラン利用中")
-                                .fontWeight(.semibold)
-                        }
-                    } else {
-                        Button {
-                            showPaywall = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "star.circle")
-                                    .foregroundStyle(.yellow)
-                                Text("ツギイチ Pro にアップグレード")
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-
-                    Button("購入を復元") {
-                        Task {
-                            await subscriptionManager.restorePurchases()
-                        }
-                    }
-                    .font(.footnote)
-                } header: {
-                    Text("サブスクリプション")
-                }
-
                 // MARK: - アプリ情報
                 Section("アプリ情報") {
                     LabeledContent("バージョン", value: "1.0")
@@ -215,6 +255,8 @@ struct SettingsTab: View {
                 PaywallView()
             }
             .task {
+                await billing.loadProducts()
+                await entitlements.refresh()
                 await subscriptionManager.updateSubscriptionStatus()
             }
         }

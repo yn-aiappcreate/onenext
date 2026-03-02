@@ -20,6 +20,9 @@ struct AIStepSheet: View {
     @State private var generatedSteps: [AIStepResult] = []
     @State private var errorMessage: String?
     @State private var isLoading = false
+    @State private var showPaywall = false
+
+    @ObservedObject private var credits = CreditsStore.shared
 
     enum Phase {
         case consent
@@ -63,6 +66,9 @@ struct AIStepSheet: View {
                         Button("閉じる") { dismiss() }
                     }
                 }
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
             }
         }
         .onAppear {
@@ -124,16 +130,45 @@ struct AIStepSheet: View {
                 }
             }
 
+            // MARK: - Credits info
             Section {
-                Button {
-                    Task { await sendRequest() }
-                } label: {
-                    Label("送信する", systemImage: "paperplane.fill")
-                        .frame(maxWidth: .infinity)
-                        .fontWeight(.semibold)
+                HStack {
+                    Image(systemName: "cpu")
+                        .foregroundStyle(.purple)
+                    Text("AI残クレジット: \(credits.totalRemaining)回")
+                        .font(.subheadline)
+                    Spacer()
+                    if !credits.canUseAI {
+                        Text("枠なし")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 }
-                .buttonStyle(.borderedProminent)
-                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            }
+
+            Section {
+                if credits.canUseAI {
+                    Button {
+                        Task { await sendRequest() }
+                    } label: {
+                        Label("送信する（1クレジット消費）", systemImage: "paperplane.fill")
+                            .frame(maxWidth: .infinity)
+                            .fontWeight(.semibold)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                } else {
+                    Button {
+                        showPaywall = true
+                    } label: {
+                        Label("クレジットを追加する", systemImage: "star.circle")
+                            .frame(maxWidth: .infinity)
+                            .fontWeight(.semibold)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.yellow)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                }
             }
         }
     }
@@ -299,6 +334,12 @@ struct AIStepSheet: View {
     }
 
     private func sendRequest() async {
+        // Pre-check credits locally
+        guard credits.canUseAI else {
+            showPaywall = true
+            return
+        }
+
         phase = .loading
         isLoading = true
         errorMessage = nil
@@ -310,17 +351,35 @@ struct AIStepSheet: View {
             constraints: nil
         )
 
+        // Consume one credit locally before sending
+        credits.ensureWindowStarted()
+        let consumed = credits.consumeOne()
+        guard consumed else {
+            showPaywall = true
+            isLoading = false
+            return
+        }
+
         do {
-            let steps = try await AIService.generateSteps(
+            let result = try await AIService.generateSteps(
                 payload: payload,
                 endpointURL: aiEndpointURL,
                 authToken: aiAuthToken
             )
-            generatedSteps = steps
+            generatedSteps = result.steps
+            // Sync remaining from Proxy if available (M11+)
+            if let remaining = result.remaining {
+                credits.syncFromProxy(remaining: remaining)
+            }
             phase = .result
         } catch let error as AIServiceError {
-            errorMessage = error.errorDescription
-            phase = .error
+            if case .creditsExhausted = error {
+                showPaywall = true
+                phase = .preview
+            } else {
+                errorMessage = error.errorDescription
+                phase = .error
+            }
         } catch {
             errorMessage = error.localizedDescription
             phase = .error

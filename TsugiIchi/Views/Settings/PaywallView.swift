@@ -3,95 +3,104 @@ import StoreKit
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
+    @ObservedObject private var billing = BillingManager.shared
+    @ObservedObject private var entitlements = EntitlementStore.shared
+    @ObservedObject private var credits = CreditsStore.shared
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 12) {
+                    // MARK: - Header
+                    VStack(spacing: 8) {
                         Image(systemName: "star.circle.fill")
-                            .font(.system(size: 60))
+                            .font(.system(size: 56))
                             .foregroundStyle(.yellow)
-
                         Text("ツギイチ Pro")
                             .font(.largeTitle)
                             .fontWeight(.bold)
-
-                        Text("すべての機能をアンロック")
-                            .font(.headline)
+                        Text("AIでステップ分解をもっと活用しよう")
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                     .padding(.top, 20)
 
-                    // Features list
-                    VStack(alignment: .leading, spacing: 16) {
+                    // MARK: - Credits status
+                    creditsStatusSection
+
+                    // MARK: - Pro features
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Pro特典")
+                            .font(.headline)
+                            .padding(.horizontal)
+
                         ProFeatureRow(
                             icon: "cpu",
                             color: .purple,
-                            title: "AIアシスト",
-                            description: "AIでGoalをStepに自動分解"
+                            title: "AI分解 300回/30日",
+                            subtitle: "無料枠の30倍"
                         )
                         ProFeatureRow(
-                            icon: "calendar.badge.plus",
+                            icon: "bag.badge.plus",
                             color: .blue,
-                            title: "カレンダー連携",
-                            description: "PlanのStepをiPhoneカレンダーに同期"
+                            title: "追加パック購入",
+                            subtitle: "+300回のAIクレジット（期限なし）"
                         )
                         ProFeatureRow(
-                            icon: "square.and.arrow.up",
+                            icon: "calendar",
                             color: .green,
-                            title: "CSVエクスポート",
-                            description: "Goal・Stepデータをcsv出力"
+                            title: "カレンダー書き出し",
+                            subtitle: "Stepをカレンダーに同期"
                         )
                         ProFeatureRow(
                             icon: "infinity",
                             color: .orange,
                             title: "無制限のGoal",
-                            description: "Free版は\(SubscriptionManager.freeGoalLimit)件まで"
+                            subtitle: "Free版は\(SubscriptionManager.freeGoalLimit)件まで"
                         )
                     }
-                    .padding(.horizontal)
+                    .padding(.vertical, 8)
 
-                    // Products
-                    VStack(spacing: 12) {
-                        if subscriptionManager.products.isEmpty {
-                            ProgressView()
-                                .padding()
-                        } else {
-                            ForEach(subscriptionManager.products, id: \.id) { product in
-                                ProductButton(product: product) {
-                                    Task {
-                                        await subscriptionManager.purchase(product)
-                                    }
+                    // MARK: - Products
+                    if billing.products.isEmpty {
+                        ProgressView("商品を読み込み中...")
+                            .padding()
+                    } else {
+                        VStack(spacing: 12) {
+                            if let pro = billing.proProduct {
+                                ProductButton(product: pro, label: "Pro（月額）") {
+                                    Task { await billing.purchase(pro) }
+                                }
+                            }
+                            if let pack = billing.packProduct {
+                                ProductButton(product: pack, label: "AI追加パック (+300回)") {
+                                    Task { await billing.purchase(pack) }
                                 }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
 
-                    if let error = subscriptionManager.purchaseError {
+                    // MARK: - Error
+                    if let error = billing.purchaseError {
                         Text(error)
                             .font(.caption)
                             .foregroundStyle(.red)
+                            .padding(.horizontal)
                     }
 
-                    // Restore
+                    // MARK: - Restore
                     Button("購入を復元") {
-                        Task {
-                            await subscriptionManager.restorePurchases()
-                        }
+                        Task { await billing.restorePurchases() }
                     }
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 
-                    // Legal
+                    // MARK: - Legal
                     VStack(spacing: 4) {
-                        Text("サブスクリプションはiTunesアカウントに請求されます。")
-                        Text("期間終了の24時間前までにキャンセルしない限り自動更新されます。")
+                        Text("サブスクリプションはApple IDに課金され、期間終了の24時間前までにキャンセルしない限り自動更新されます。")
                         Link("利用規約", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
-                        Link("プライバシーポリシー", destination: URL(string: "https://www.apple.com/legal/privacy/")!)
+                        Link("プライバシーポリシー", destination: URL(string: "https://www.apple.com/privacy/")!)
                     }
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -100,6 +109,7 @@ struct PaywallView: View {
                     .padding(.bottom, 20)
                 }
             }
+            .navigationTitle("アップグレード")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -107,9 +117,69 @@ struct PaywallView: View {
                 }
             }
             .task {
-                await subscriptionManager.loadProducts()
+                if billing.products.isEmpty {
+                    await billing.loadProducts()
+                }
+            }
+            .disabled(billing.isPurchasing)
+            .overlay {
+                if billing.isPurchasing {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                    ProgressView("購入処理中...")
+                        .padding()
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
             }
         }
+    }
+
+    // MARK: - Credits Status
+
+    private var creditsStatusSection: some View {
+        VStack(spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("AI残クレジット")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text("\(credits.totalRemaining)")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(credits.totalRemaining > 0 ? .primary : .red)
+                        Text("回")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("プラン")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(entitlements.isPro ? "Pro" : "Free")
+                        .font(.headline)
+                        .foregroundStyle(entitlements.isPro ? .yellow : .secondary)
+                }
+            }
+
+            HStack(spacing: 16) {
+                Label("月次枠: \(credits.monthlyRemaining)/\(credits.monthlyLimit)",
+                      systemImage: "calendar.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if credits.purchasedCredits > 0 {
+                    Label("購入枠: \(credits.purchasedCredits)",
+                          systemImage: "bag.circle")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
     }
 }
 
@@ -119,23 +189,25 @@ private struct ProFeatureRow: View {
     let icon: String
     let color: Color
     let title: String
-    let description: String
+    let subtitle: String
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.title3)
                 .foregroundStyle(color)
-                .frame(width: 36)
-
+                .frame(width: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.headline)
-                Text(description)
                     .font(.subheadline)
+                    .fontWeight(.medium)
+                Text(subtitle)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            Spacer()
         }
+        .padding(.horizontal)
     }
 }
 
@@ -143,44 +215,36 @@ private struct ProFeatureRow: View {
 
 private struct ProductButton: View {
     let product: Product
+    let label: String
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(product.displayName)
+                    Text(label)
                         .font(.headline)
-                    if let subscription = product.subscription {
-                        Text(periodLabel(subscription.subscriptionPeriod))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(product.displayPrice + periodSuffix)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text(product.displayPrice)
-                    .font(.title3)
-                    .fontWeight(.bold)
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             .padding()
             .background(Color.accentColor.opacity(0.1))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.accentColor, lineWidth: 1)
-            )
         }
         .buttonStyle(.plain)
     }
 
-    private func periodLabel(_ period: Product.SubscriptionPeriod) -> String {
-        switch period.unit {
-        case .month: return period.value == 1 ? "毎月自動更新" : "\(period.value)ヶ月ごと"
-        case .year:  return period.value == 1 ? "毎年自動更新" : "\(period.value)年ごと"
-        case .week:  return "\(period.value)週間ごと"
-        case .day:   return "\(period.value)日ごと"
-        @unknown default: return ""
+    private var periodSuffix: String {
+        if product.type == .autoRenewable {
+            return " / 月"
         }
+        return ""
     }
 }
 
