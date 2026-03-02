@@ -19,6 +19,7 @@ for key in [
     "fr_ai_consent_view", "fr_ai_step_sheet",
     "fr_billing_manager", "fr_entitlement_store", "fr_credits_store",
     "fr_client_id", "fr_paywall_view",
+    "fr_localizable_xcstrings",
     "fr_product_app", "fr_product_tests",
     "fr_model_tests", "fr_template_tests", "fr_datehelper_tests",
 ]:
@@ -37,6 +38,7 @@ for key in [
     "bf_ai_consent_view", "bf_ai_step_sheet",
     "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
     "bf_client_id", "bf_paywall_view",
+    "bf_localizable_xcstrings",
     "bf_model_tests", "bf_template_tests", "bf_datehelper_tests",
 ]:
     ids[key] = make_id(key)
@@ -47,7 +49,7 @@ for key in [
     "gr_backlog", "gr_plan", "gr_review", "gr_settings", "gr_components",
     "gr_services", "gr_utilities", "gr_preview", "gr_tests", "gr_products",
     "gr_onboarding",
-    "gr_ai",
+    "gr_ai", "gr_resources",
     "tg_app", "tg_tests",
     "bp_app_sources", "bp_app_frameworks", "bp_app_resources",
     "bp_tests_sources", "bp_tests_frameworks", "bp_tests_resources",
@@ -90,6 +92,7 @@ bf_to_fr = {
     "bf_credits_store": ("fr_credits_store", "CreditsStore.swift"),
     "bf_client_id": ("fr_client_id", "ClientId.swift"),
     "bf_paywall_view": ("fr_paywall_view", "PaywallView.swift"),
+    "bf_localizable_xcstrings": ("fr_localizable_xcstrings", "Localizable.xcstrings"),
     "bf_model_tests": ("fr_model_tests", "ModelTests.swift"),
     "bf_template_tests": ("fr_template_tests", "TemplateEngineTests.swift"),
     "bf_datehelper_tests": ("fr_datehelper_tests", "DateHelperTests.swift"),
@@ -107,7 +110,7 @@ app_sources = [
     "bf_billing_manager", "bf_entitlement_store", "bf_credits_store",
     "bf_client_id", "bf_paywall_view",
 ]
-app_resources = ["bf_assets"]
+app_resources = ["bf_assets", "bf_localizable_xcstrings"]
 test_sources = ["bf_model_tests", "bf_template_tests", "bf_datehelper_tests"]
 
 # Helper
@@ -178,6 +181,7 @@ fr_info = [
     ("fr_credits_store", "lastKnownFileType = sourcecode.swift", "CreditsStore.swift", '"<group>"'),
     ("fr_client_id", "lastKnownFileType = sourcecode.swift", "ClientId.swift", '"<group>"'),
     ("fr_paywall_view", "lastKnownFileType = sourcecode.swift", "PaywallView.swift", '"<group>"'),
+    ("fr_localizable_xcstrings", "lastKnownFileType = text.json.xcstrings", "Localizable.xcstrings", '"<group>"'),
     ("fr_date_helper", "lastKnownFileType = sourcecode.swift", "DateHelper.swift", '"<group>"'),
     ("fr_constants", "lastKnownFileType = sourcecode.swift", "Constants.swift", '"<group>"'),
     ("fr_empty_state", "lastKnownFileType = sourcecode.swift", "EmptyStateView.swift", '"<group>"'),
@@ -239,6 +243,7 @@ write_group("gr_onenext", "TsugiIchi", [
     ("gr_views", "Views"),
     ("gr_services", "Services"),
     ("gr_utilities", "Utilities"),
+    ("gr_resources", "Resources"),
 ], path="TsugiIchi")
 
 write_group("gr_app", "App", [
@@ -316,6 +321,10 @@ write_group("gr_utilities", "Utilities", [
     ("fr_constants", "Constants.swift"),
     ("fr_client_id", "ClientId.swift"),
 ], path="Utilities")
+
+write_group("gr_resources", "Resources", [
+    ("fr_localizable_xcstrings", "Localizable.xcstrings"),
+], path="Resources")
 
 write_group("gr_tests", "TsugiIchiTests", [
     ("fr_model_tests", "ModelTests.swift"),
@@ -396,6 +405,12 @@ w(f"\t\t\tdevelopmentRegion = ja;")
 w(f"\t\t\thasScannedForEncodings = 0;")
 w(f"\t\t\tknownRegions = (")
 w(f"\t\t\t\tja,")
+w(f"\t\t\t\ten,")
+w(f"\t\t\t\tzh-Hans,")
+w(f"\t\t\t\tko,")
+w(f"\t\t\t\tes,")
+w(f"\t\t\t\tfr,")
+w(f"\t\t\t\tde,")
 w(f"\t\t\t\tBase,")
 w(f"\t\t\t);")
 w(f"\t\t\tmainGroup = {I('gr_main')};")
