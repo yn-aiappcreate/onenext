@@ -88,10 +88,12 @@ struct PaywallView: View {
                                     }
                                 }
                             }
-                            // AI pack is always available for Pro users
-                            if entitlements.isPro, let pack = billing.packProduct {
-                                PackProductButton(product: pack) {
-                                    Task { await billing.purchase(pack) }
+                            // AI pack available for Pro users
+                            if entitlements.isPro {
+                                PackProductButton {
+                                    if let pack = billing.packProduct {
+                                        Task { await billing.purchase(pack) }
+                                    }
                                 }
                             }
                         }
@@ -319,7 +321,6 @@ private struct MonthlyProductButton: View {
 // MARK: - PackProductButton
 
 private struct PackProductButton: View {
-    let product: Product
     let action: () -> Void
 
     var body: some View {
