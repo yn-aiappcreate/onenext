@@ -46,6 +46,8 @@
 		D51A5EDD3CFE593AA4A33CBA /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */; };
 		4D7427777CA25DE8AA0B0AEF /* TemplateEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6008C347D80505980DB8174 /* TemplateEngineTests.swift */; };
 		2761F5B8F7E850938CC0B276 /* DateHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533E02662A195F7293225DA9 /* DateHelperTests.swift */; };
+		BIT0000100010001B0010001 /* BillingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIT0000200020002B0020002 /* BillingIntegrationTests.swift */; };
+		SKC0000100010001C0010001 /* TsugiIchi.storekit in Resources */ = {isa = PBXBuildFile; fileRef = SKC0000200020002C0020002 /* TsugiIchi.storekit */; };
 		W1D1A1B1C1D1E1F101112131 /* TsugiIchiWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */; };
 		W3D3A3B3C3D3E3F303132333 /* TsugiIchiWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -110,6 +112,8 @@
 		E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		A6008C347D80505980DB8174 /* TemplateEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateEngineTests.swift; sourceTree = "<group>"; };
 		533E02662A195F7293225DA9 /* DateHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelperTests.swift; sourceTree = "<group>"; };
+		BIT0000200020002B0020002 /* BillingIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingIntegrationTests.swift; sourceTree = "<group>"; };
+		SKC0000200020002C0020002 /* TsugiIchi.storekit */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = TsugiIchi.storekit; sourceTree = "<group>"; };
 		W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TsugiIchiWidget.swift; sourceTree = "<group>"; };
 		WIPLIST0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TsugiIchiWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -168,8 +172,17 @@
 				58593C7BD77F5F2B9AE02A7E /* Services */,
 				4CF9346E5B8A582C9955A7F3 /* Utilities */,
 				1462DCEFD68E5EF79B010787 /* Resources */,
+				SKCGRP00000000000000001 /* Configuration */,
 			);
 			path = TsugiIchi;
+			sourceTree = "<group>";
+		};
+		SKCGRP00000000000000001 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				SKC0000200020002C0020002 /* TsugiIchi.storekit */,
+			);
+			path = Configuration;
 			sourceTree = "<group>";
 		};
 		BFF0159BC6EB5E818E6FC748 /* App */ = {
@@ -329,6 +342,7 @@
 				E3C8FCB8EC2B5E709ACD8E54 /* ModelTests.swift */,
 				A6008C347D80505980DB8174 /* TemplateEngineTests.swift */,
 				533E02662A195F7293225DA9 /* DateHelperTests.swift */,
+				BIT0000200020002B0020002 /* BillingIntegrationTests.swift */,
 			);
 			path = TsugiIchiTests;
 			sourceTree = "<group>";
@@ -476,6 +490,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				SKC0000100010001C0010001 /* TsugiIchi.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -537,6 +552,7 @@
 				D51A5EDD3CFE593AA4A33CBA /* ModelTests.swift in Sources */,
 				4D7427777CA25DE8AA0B0AEF /* TemplateEngineTests.swift in Sources */,
 				2761F5B8F7E850938CC0B276 /* DateHelperTests.swift in Sources */,
+				BIT0000100010001B0010001 /* BillingIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
