@@ -45,7 +45,9 @@ final class SubscriptionManager: ObservableObject {
         do {
             let storeProducts = try await Product.products(for: productIds)
             products = storeProducts.sorted { $0.price < $1.price }
+            BillingEventLog.shared.log(.purchase, "SubscriptionManager.loadProducts count=\(products.count)")
         } catch {
+            BillingEventLog.shared.log(.error, "SubscriptionManager.loadProducts error=\(error)")
             print("[SubscriptionManager] Failed to load products: \(error)")
         }
     }
@@ -54,21 +56,27 @@ final class SubscriptionManager: ObservableObject {
 
     func purchase(_ product: Product) async {
         purchaseError = nil
+        BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase start product=\(product.id)")
         do {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
                 let transaction = extractTransaction(verification)
                 await transaction.finish()
+                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase success product=\(product.id)")
                 await updateSubscriptionStatus()
             case .userCancelled:
+                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase cancelled product=\(product.id)")
                 break
             case .pending:
+                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase pending product=\(product.id)")
                 purchaseError = "購入が保留中です"
             @unknown default:
+                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase unknown result product=\(product.id)")
                 break
             }
         } catch {
+            BillingEventLog.shared.log(.error, "SubscriptionManager.purchase error product=\(product.id) error=\(error)")
             purchaseError = "購入に失敗しました: \(error.localizedDescription)"
         }
     }
@@ -76,7 +84,13 @@ final class SubscriptionManager: ObservableObject {
     // MARK: - Restore
 
     func restorePurchases() async {
-        try? await AppStore.sync()
+        BillingEventLog.shared.log(.restore, "SubscriptionManager.restorePurchases start")
+        do {
+            try await AppStore.sync()
+            BillingEventLog.shared.log(.restore, "SubscriptionManager.AppStore.sync success")
+        } catch {
+            BillingEventLog.shared.log(.error, "SubscriptionManager.restorePurchases error=\(error)")
+        }
         await updateSubscriptionStatus()
     }
 
@@ -85,7 +99,7 @@ final class SubscriptionManager: ObservableObject {
     func updateSubscriptionStatus() async {
         var hasActiveSubscription = false
 
-        for await result in Transaction.currentEntitlements {
+        for await result in StoreKit.Transaction.currentEntitlements {
             let transaction = extractTransaction(result)
             if productIds.contains(transaction.productID) {
                 hasActiveSubscription = true
@@ -93,13 +107,15 @@ final class SubscriptionManager: ObservableObject {
         }
 
         isProUser = hasActiveSubscription
+        BillingEventLog.shared.log(.entitlement, "SubscriptionManager.updateSubscriptionStatus isProUser=\(hasActiveSubscription)")
     }
 
     // MARK: - Transaction Listener
 
     private func listenForTransactions() async {
-        for await result in Transaction.updates {
+        for await result in StoreKit.Transaction.updates {
             let transaction = extractTransaction(result)
+            EntitlementStore.shared.markTransactionUpdateReceived(productId: transaction.productID)
             await transaction.finish()
             await updateSubscriptionStatus()
         }

@@ -14,6 +14,12 @@ final class EntitlementStore: ObservableObject {
     /// This is sent to the Proxy so it can cryptographically verify Pro status.
     private(set) var proTransactionJWS: String?
 
+    /// Timestamp of the last Transaction.updates reception (for Debug screen).
+    @Published private(set) var lastTransactionUpdateDate: Date?
+
+    /// Timestamp of the last refresh() completion (for Debug screen).
+    @Published private(set) var lastEntitlementRefreshDate: Date?
+
     private init() {
         Task { await refresh() }
     }
@@ -22,6 +28,7 @@ final class EntitlementStore: ObservableObject {
 
     /// Re-check subscription status from StoreKit.
     func refresh() async {
+        let previousIsPro = isPro
         var foundPro = false
         var jws: String?
 
@@ -53,12 +60,25 @@ final class EntitlementStore: ObservableObject {
         isPro = foundPro
         proTransactionJWS = jws
         if !foundPro { activeProductId = nil }
+        lastEntitlementRefreshDate = Date()
         print("[EntitlementStore] refresh complete — isPro=\(foundPro)")
+        BillingEventLog.shared.log(.entitlement, "refresh isPro=\(foundPro) product=\(activeProductId ?? \"nil\") jws=\(jws != nil ? \"present\" : \"nil\")")
+
+        if previousIsPro != foundPro {
+            BillingEventLog.shared.log(.entitlement, "isPro changed \(previousIsPro) -> \(foundPro)")
+            CreditsStore.shared.onProStatusChanged()
+        }
 
         // Fallback: if currentEntitlements didn't find Pro, check latest transactions directly
         if !foundPro {
             await checkLatestTransactions()
         }
+    }
+
+    /// Mark receipt of a transaction update from `Transaction.updates`.
+    func markTransactionUpdateReceived(productId: String) {
+        lastTransactionUpdateDate = Date()
+        BillingEventLog.shared.log(.transactionUp, "Transaction.updates received: \(productId)")
     }
 
     /// Fallback check using Transaction.latest(for:) for each Pro product.
@@ -81,6 +101,7 @@ final class EntitlementStore: ObservableObject {
                 activeProductId = transaction.productID
                 proTransactionJWS = result.jwsRepresentation
                 print("[EntitlementStore] fallback: Pro found via latest transaction: \(productId)")
+                BillingEventLog.shared.log(.entitlement, "fallback Pro found: \(productId)")
                 return
             } else {
                 print("[EntitlementStore] fallback: transaction expired/revoked for \(productId)")

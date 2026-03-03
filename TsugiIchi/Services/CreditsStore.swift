@@ -40,6 +40,9 @@ final class CreditsStore: ObservableObject {
     /// Last `verificationMethod` value returned by Proxy (for Debug screen).
     @Published var lastVerificationMethod: String?
 
+    /// Timestamp of the last Proxy sync (for Debug screen).
+    @Published private(set) var lastProxySyncDate: Date?
+
     /// Purchased credits (from pack300). Never expire.
     @Published private(set) var purchasedCredits: Int
 
@@ -92,6 +95,7 @@ final class CreditsStore: ObservableObject {
         if monthlyUsedCount < monthlyLimit {
             monthlyUsedCount += 1
             save()
+            BillingEventLog.shared.log(.credit, "consumeOne (monthly) used=\(monthlyUsedCount)/\(monthlyLimit)")
             return true
         }
 
@@ -99,9 +103,11 @@ final class CreditsStore: ObservableObject {
         if purchasedCredits > 0 {
             purchasedCredits -= 1
             save()
+            BillingEventLog.shared.log(.credit, "consumeOne (purchased) remaining=\(purchasedCredits)")
             return true
         }
 
+        BillingEventLog.shared.log(.error, "consumeOne failed: no credits")
         // No credits left
         return false
     }
@@ -112,6 +118,7 @@ final class CreditsStore: ObservableObject {
     func addPurchasedCredits(_ count: Int) {
         purchasedCredits += count
         save()
+        BillingEventLog.shared.log(.credit, "addPurchasedCredits +\(count) total=\(purchasedCredits)")
     }
 
     // MARK: - Sync from Proxy
@@ -122,9 +129,11 @@ final class CreditsStore: ObservableObject {
     func syncFromProxy(remaining: Int, verificationMethod: String? = nil) {
         let proxyRemaining = max(0, remaining)
         lastProxyRemaining = proxyRemaining
+        lastProxySyncDate = Date()
         if let method = verificationMethod {
             lastVerificationMethod = method
         }
+        BillingEventLog.shared.log(.proxy, "syncFromProxy remaining=\(proxyRemaining) method=\(verificationMethod ?? "nil")")
         let localTotal = totalRemaining
 
         // Only adjust if Proxy reports fewer credits than local (prevent inflation)
@@ -133,7 +142,11 @@ final class CreditsStore: ObservableObject {
             // remaining = (monthlyLimit - monthlyUsed) + purchasedCredits
             // => monthlyUsed = monthlyLimit - (remaining - purchasedCredits)
             let monthlyRemainingFromProxy = max(0, proxyRemaining - purchasedCredits)
-            monthlyUsedCount = max(0, monthlyLimit - monthlyRemainingFromProxy)
+            let newUsed = max(0, monthlyLimit - monthlyRemainingFromProxy)
+            if newUsed != monthlyUsedCount {
+                BillingEventLog.shared.log(.proxy, "syncFromProxy adjusted monthlyUsed \(monthlyUsedCount) -> \(newUsed) (limit=\(monthlyLimit), purchased=\(purchasedCredits))")
+            }
+            monthlyUsedCount = newUsed
             save()
         }
         // If Proxy reports more, keep local (conservative — prevents gaming)
@@ -145,6 +158,7 @@ final class CreditsStore: ObservableObject {
     /// If downgrading from Pro, the monthly used count may exceed the new limit,
     /// which naturally results in 0 monthly remaining.
     func onProStatusChanged() {
+        BillingEventLog.shared.log(.entitlement, "CreditsStore.onProStatusChanged isPro=\(EntitlementStore.shared.isPro) monthlyLimit=\(monthlyLimit)")
         objectWillChange.send()
     }
 
@@ -164,6 +178,7 @@ final class CreditsStore: ObservableObject {
             monthlyUsedCount = 0
             windowStartDate = Date()
             save()
+            BillingEventLog.shared.log(.credit, "rollWindowIfNeeded reset windowStart=\(windowStartDate.map(String.init(describing:)) ?? "nil")")
         }
     }
 
@@ -172,6 +187,7 @@ final class CreditsStore: ObservableObject {
         if windowStartDate == nil {
             windowStartDate = Date()
             save()
+            BillingEventLog.shared.log(.credit, "ensureWindowStarted windowStart=\(windowStartDate.map(String.init(describing:)) ?? "nil")")
         }
     }
 
@@ -192,8 +208,12 @@ final class CreditsStore: ObservableObject {
         monthlyUsedCount = 0
         windowStartDate = nil
         purchasedCredits = 0
+        lastProxyRemaining = nil
+        lastProxySyncDate = nil
+        lastVerificationMethod = nil
         defaults.removeObject(forKey: Keys.monthlyUsedCount)
         defaults.removeObject(forKey: Keys.windowStartDate)
         defaults.removeObject(forKey: Keys.purchasedCredits)
+        BillingEventLog.shared.log(.credit, "resetAll completed")
     }
 }

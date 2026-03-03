@@ -291,7 +291,7 @@ struct SettingsTab: View {
             NavigationLink {
                 DebugBillingView()
             } label: {
-                Label("課金デバッグ", systemImage: "ladybug")
+                Label("Debug Billing", systemImage: "ladybug")
             }
         }
     }
