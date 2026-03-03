@@ -98,11 +98,26 @@ final class BillingManager: ObservableObject {
 
     // MARK: - Purchase
 
+    /// Set to `true` when a Pro user attempts to purchase a subscription.
+    /// The UI layer should observe this to show a warning alert.
+    @Published private(set) var showAlreadyProWarning = false
+
     func purchase(_ product: Product) async -> Transaction? {
         isPurchasing = true
         purchaseError = nil
+        showAlreadyProWarning = false
         BillingEventLog.shared.log(.purchase, "purchase start product=\(product.id)")
         defer { isPurchasing = false }
+
+        // Safety net: block subscription purchase if already Pro
+        let isSubscription = product.id == BillingProduct.proMonthly.rawValue
+            || product.id == BillingProduct.proYearly.rawValue
+        if isSubscription && EntitlementStore.shared.isPro {
+            BillingEventLog.shared.log(.purchase,
+                "purchase BLOCKED: already Pro, attempted \(product.id)")
+            showAlreadyProWarning = true
+            return nil
+        }
 
         do {
             let result = try await product.purchase()
