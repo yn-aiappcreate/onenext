@@ -109,7 +109,7 @@ final class SubscriptionManager: ObservableObject {
 
     /// Extract the transaction from a VerificationResult.
     /// Accepts both verified and unverified transactions (Sandbox may return unverified).
-    private func extractTransaction(_ result: VerificationResult<Transaction>) -> Transaction {
+    private func extractTransaction(_ result: VerificationResult<StoreKit.Transaction>) -> StoreKit.Transaction {
         switch result {
         case .verified(let transaction):
             print("[SubscriptionManager] verified transaction: \(transaction.productID)")
