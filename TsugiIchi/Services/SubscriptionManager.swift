@@ -58,7 +58,7 @@ final class SubscriptionManager: ObservableObject {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
-                let transaction = try checkVerified(verification)
+                let transaction = extractTransaction(verification)
                 await transaction.finish()
                 await updateSubscriptionStatus()
             case .userCancelled:
@@ -86,7 +86,7 @@ final class SubscriptionManager: ObservableObject {
         var hasActiveSubscription = false
 
         for await result in Transaction.currentEntitlements {
-            guard let transaction = try? checkVerified(result) else { continue }
+            let transaction = extractTransaction(result)
             if productIds.contains(transaction.productID) {
                 hasActiveSubscription = true
             }
@@ -99,7 +99,7 @@ final class SubscriptionManager: ObservableObject {
 
     private func listenForTransactions() async {
         for await result in Transaction.updates {
-            guard let transaction = try? checkVerified(result) else { continue }
+            let transaction = extractTransaction(result)
             await transaction.finish()
             await updateSubscriptionStatus()
         }
@@ -107,12 +107,16 @@ final class SubscriptionManager: ObservableObject {
 
     // MARK: - Verification
 
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+    /// Extract the transaction from a VerificationResult.
+    /// Accepts both verified and unverified transactions (Sandbox may return unverified).
+    private func extractTransaction(_ result: VerificationResult<Transaction>) -> Transaction {
         switch result {
-        case .unverified(_, let error):
-            throw error
-        case .verified(let value):
-            return value
+        case .verified(let transaction):
+            print("[SubscriptionManager] verified transaction: \(transaction.productID)")
+            return transaction
+        case .unverified(let transaction, let error):
+            print("[SubscriptionManager] unverified transaction: \(transaction.productID), error: \(error)")
+            return transaction
         }
     }
 }

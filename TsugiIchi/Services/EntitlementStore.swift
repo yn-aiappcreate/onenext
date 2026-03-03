@@ -101,4 +101,7 @@ final class EntitlementStore: ObservableObject {
     var monthlyLimit: Int {
         isPro ? CreditsStore.proMonthlyLimit : CreditsStore.freeMonthlyLimit
     }
+
+    /// Free tier allows up to 5 active goals.
+    static let freeGoalLimit = 5
 }

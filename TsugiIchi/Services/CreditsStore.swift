@@ -34,6 +34,12 @@ final class CreditsStore: ObservableObject {
     /// Start of the current 30-day window.
     @Published private(set) var windowStartDate: Date?
 
+    /// Last `remaining` value returned by Proxy (for Debug screen).
+    @Published private(set) var lastProxyRemaining: Int?
+
+    /// Last `verificationMethod` value returned by Proxy (for Debug screen).
+    @Published var lastVerificationMethod: String?
+
     /// Purchased credits (from pack300). Never expire.
     @Published private(set) var purchasedCredits: Int
 
@@ -113,8 +119,12 @@ final class CreditsStore: ObservableObject {
     /// Update local state from Proxy's `remaining` response.
     /// The Proxy is the source of truth for credit tracking (M11).
     /// We adjust local `monthlyUsedCount` so that `totalRemaining` matches the Proxy value.
-    func syncFromProxy(remaining: Int) {
+    func syncFromProxy(remaining: Int, verificationMethod: String? = nil) {
         let proxyRemaining = max(0, remaining)
+        lastProxyRemaining = proxyRemaining
+        if let method = verificationMethod {
+            lastVerificationMethod = method
+        }
         let localTotal = totalRemaining
 
         // Only adjust if Proxy reports fewer credits than local (prevent inflation)

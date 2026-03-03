@@ -33,7 +33,7 @@ struct BacklogTab: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        if !entitlements.isPro && activeGoalCount >= SubscriptionManager.freeGoalLimit {
+                        if !entitlements.isPro && activeGoalCount >= EntitlementStore.freeGoalLimit {
                             showPaywall = true
                         } else {
                             showCreateSheet = true

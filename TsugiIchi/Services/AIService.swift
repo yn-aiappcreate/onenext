@@ -43,6 +43,7 @@ enum AIService {
     struct GenerateResult {
         let steps: [AIStepResult]
         let remaining: Int?
+        let verificationMethod: String?
     }
 
     /// Generate Step suggestions by calling the proxy endpoint.
@@ -126,6 +127,6 @@ enum AIService {
             throw AIServiceError.emptySteps
         }
 
-        return GenerateResult(steps: decoded.steps, remaining: decoded.remaining)
+        return GenerateResult(steps: decoded.steps, remaining: decoded.remaining, verificationMethod: decoded.verificationMethod)
     }
 }

@@ -17,15 +17,18 @@ struct AIResponse: Codable {
     let steps: [AIStepResult]
     /// Remaining AI credits returned by the Proxy (M11+). Nil when Proxy doesn't support it yet.
     let remaining: Int?
+    /// How the Proxy verified Pro status (M12). e.g. "apple_jws_verified", "header_fallback", etc.
+    let verificationMethod: String?
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.steps = try container.decode([AIStepResult].self, forKey: .steps)
         self.remaining = try container.decodeIfPresent(Int.self, forKey: .remaining)
+        self.verificationMethod = try container.decodeIfPresent(String.self, forKey: .verificationMethod)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case steps, remaining
+        case steps, remaining, verificationMethod
     }
 }
 
