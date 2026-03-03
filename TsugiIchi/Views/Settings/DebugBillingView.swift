@@ -126,8 +126,9 @@ struct DebugBillingView: View {
                 value: credits.windowStartDate.map { formatDateTime($0) } ?? "(not started)")
 
             // Show both tiers explicitly (same windowStart/usedCount, different limits)
-            row("free tier", value: "start=\(credits.windowStartDate.map(formatDateTime) ?? \"(nil)\") used=\(credits.monthlyUsedCount) limit=\(CreditsStore.freeMonthlyLimit)")
-            row("pro tier", value: "start=\(credits.windowStartDate.map(formatDateTime) ?? \"(nil)\") used=\(credits.monthlyUsedCount) limit=\(CreditsStore.proMonthlyLimit)")
+            let windowStr = credits.windowStartDate.map { formatDateTime($0) } ?? "(nil)"
+            row("free tier", value: "start=\(windowStr) used=\(credits.monthlyUsedCount) limit=\(CreditsStore.freeMonthlyLimit)")
+            row("pro tier", value: "start=\(windowStr) used=\(credits.monthlyUsedCount) limit=\(CreditsStore.proMonthlyLimit)")
         }
     }
 
