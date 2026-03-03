@@ -124,32 +124,38 @@ final class CreditsStore: ObservableObject {
     // MARK: - Sync from Proxy
 
     /// Update local state from Proxy's `remaining` response.
-    /// The Proxy is the source of truth for credit tracking (M11).
-    /// We adjust local `monthlyUsedCount` so that `totalRemaining` matches the Proxy value.
+    ///
+    /// Checklist: **remainingの真実は一箇所にする（Proxyを正とする）**
+    /// The Proxy is the authoritative source of truth for credit tracking (M11).
+    /// Local state is always overwritten to match Proxy — both upward and downward.
     func syncFromProxy(remaining: Int, verificationMethod: String? = nil) {
         let proxyRemaining = max(0, remaining)
+        let previousTotal = totalRemaining
         lastProxyRemaining = proxyRemaining
         lastProxySyncDate = Date()
         if let method = verificationMethod {
             lastVerificationMethod = method
         }
-        BillingEventLog.shared.log(.proxy, "syncFromProxy remaining=\(proxyRemaining) method=\(verificationMethod ?? "nil")")
-        let localTotal = totalRemaining
+        BillingEventLog.shared.log(.proxy,
+            "syncFromProxy remaining=\(proxyRemaining) localTotal=\(previousTotal) method=\(verificationMethod ?? "nil")")
 
-        // Only adjust if Proxy reports fewer credits than local (prevent inflation)
-        if proxyRemaining < localTotal {
-            // Derive how many monthly credits must have been used
-            // remaining = (monthlyLimit - monthlyUsed) + purchasedCredits
-            // => monthlyUsed = monthlyLimit - (remaining - purchasedCredits)
-            let monthlyRemainingFromProxy = max(0, proxyRemaining - purchasedCredits)
-            let newUsed = max(0, monthlyLimit - monthlyRemainingFromProxy)
-            if newUsed != monthlyUsedCount {
-                BillingEventLog.shared.log(.proxy, "syncFromProxy adjusted monthlyUsed \(monthlyUsedCount) -> \(newUsed) (limit=\(monthlyLimit), purchased=\(purchasedCredits))")
-            }
-            monthlyUsedCount = newUsed
-            save()
+        // Proxy is authoritative — always reconcile local to match.
+        // remaining = (monthlyLimit - monthlyUsed) + purchasedCredits
+        // => monthlyUsed = monthlyLimit - (remaining - purchasedCredits)
+        let monthlyRemainingFromProxy = max(0, proxyRemaining - purchasedCredits)
+        let newUsed = max(0, monthlyLimit - monthlyRemainingFromProxy)
+        if newUsed != monthlyUsedCount {
+            BillingEventLog.shared.log(.proxy,
+                "syncFromProxy adjusted monthlyUsed \(monthlyUsedCount) -> \(newUsed) (limit=\(monthlyLimit), purchased=\(purchasedCredits))")
         }
-        // If Proxy reports more, keep local (conservative — prevents gaming)
+        monthlyUsedCount = newUsed
+        save()
+
+        let newTotal = totalRemaining
+        if newTotal != previousTotal {
+            BillingEventLog.shared.log(.proxy,
+                "syncFromProxy totalRemaining changed \(previousTotal) -> \(newTotal)")
+        }
     }
 
     // MARK: - Pro status change

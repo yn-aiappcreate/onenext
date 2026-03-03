@@ -198,23 +198,18 @@ final class CreditsStoreTests: XCTestCase {
     func testDoubleCreditingPrevention() {
         let store = CreditsStore.shared
 
-        // Simulate a purchase crediting 300
+        // CreditsStore.addPurchasedCredits is intentionally additive.
+        // Double-crediting prevention is handled at the BillingManager layer
+        // via processedTransactionIds (transaction.id dedup).
         store.addPurchasedCredits(300)
         XCTAssertEqual(store.purchasedCredits, 300)
 
-        // If a duplicate transaction fires, the app should NOT credit again.
-        // In production, BillingManager.purchase() calls addPurchasedCredits(300)
-        // only inside the .success case. The transaction is then finished, preventing
-        // re-delivery.
-        //
-        // Here we verify that the CreditsStore itself does not have built-in dedup —
-        // the dedup is at the transaction layer (Transaction.finish()).
-        // This test documents the expected behavior: calling addPurchasedCredits
-        // twice DOES accumulate (the guard is in the caller, not the store).
+        // Calling addPurchasedCredits twice DOES accumulate at the store level.
+        // The dedup guard is in BillingManager.verifyAndProcess(), not here.
         store.addPurchasedCredits(300)
         XCTAssertEqual(store.purchasedCredits, 600,
             "CreditsStore.addPurchasedCredits is additive by design; " +
-            "double-crediting prevention is handled by Transaction.finish()")
+            "double-crediting prevention is handled by BillingManager.processedTransactionIds")
     }
 
     // MARK: - Reset
@@ -240,6 +235,47 @@ final class CreditsStoreTests: XCTestCase {
 
         let expected = store.monthlyRemaining + 50
         XCTAssertEqual(store.totalRemaining, expected)
+    }
+
+    // MARK: - Proxy Sync (Source of Truth)
+
+    func testSyncFromProxyUpdatesLocalState() {
+        let store = CreditsStore.shared
+        store.ensureWindowStarted()
+
+        // Simulate Proxy returning fewer credits than local
+        let initialRemaining = store.totalRemaining
+        store.syncFromProxy(remaining: max(0, initialRemaining - 3), verificationMethod: "jws")
+
+        XCTAssertEqual(store.totalRemaining, max(0, initialRemaining - 3),
+            "syncFromProxy should reconcile local state to match Proxy")
+        XCTAssertEqual(store.lastVerificationMethod, "jws")
+    }
+
+    func testSyncFromProxyUpwardAdjustment() {
+        let store = CreditsStore.shared
+        store.ensureWindowStarted()
+
+        // Exhaust some monthly credits
+        _ = store.consumeOne()
+        _ = store.consumeOne()
+        let afterConsume = store.totalRemaining
+
+        // Proxy reports MORE than local (e.g., server granted bonus)
+        // Checklist: Proxy is authoritative — local should adjust upward too
+        store.syncFromProxy(remaining: afterConsume + 5)
+
+        XCTAssertEqual(store.totalRemaining, afterConsume + 5,
+            "syncFromProxy should adjust upward when Proxy reports more credits")
+    }
+
+    func testSyncFromProxyNeverGoesNegative() {
+        let store = CreditsStore.shared
+        store.ensureWindowStarted()
+
+        store.syncFromProxy(remaining: -10)
+        XCTAssertGreaterThanOrEqual(store.totalRemaining, 0,
+            "syncFromProxy should clamp to 0, never negative")
     }
 }
 

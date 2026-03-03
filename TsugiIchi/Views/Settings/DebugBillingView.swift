@@ -63,6 +63,11 @@ struct DebugBillingView: View {
                 value: entitlements.lastEntitlementRefreshDate.map { formatDateTime($0) } ?? "(nil)")
             row("lastTransactionUpdateDate",
                 value: entitlements.lastTransactionUpdateDate.map { formatDateTime($0) } ?? "(nil)")
+
+            // New: verification status from BillingManager
+            row("lastVerificationStatus",
+                value: billing.lastVerificationStatus ?? "(nil)",
+                color: billing.lastVerificationStatus == "verified" ? .green : .orange)
         }
     }
 
@@ -219,6 +224,12 @@ struct DebugBillingView: View {
                 BillingEventLog.shared.log(.credit, "CreditsStore.resetAll invoked from DebugBillingView")
             } label: {
                 Label("Reset Credits (testing)", systemImage: "trash")
+            }
+
+            Button(role: .destructive) {
+                billing.clearProcessedTransactionIds()
+            } label: {
+                Label("Clear Processed Tx IDs (testing)", systemImage: "xmark.circle")
             }
         }
     }

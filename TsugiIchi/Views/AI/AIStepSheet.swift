@@ -379,12 +379,31 @@ struct AIStepSheet: View {
                 showPaywall = true
                 phase = .preview
             } else {
-                errorMessage = error.errorDescription
-                phase = .error
+                // Checklist: 失敗時はテンプレ分解へフォールバック
+                if goal.category != nil {
+                    // Auto-fallback to template decomposition
+                    fallbackToTemplate()
+                    errorMessage = (error.errorDescription ?? "AI生成に失敗") + "\nテンプレートで自動生成しました"
+                    BillingEventLog.shared.log(.error,
+                        "AI failed, auto-fallback to template: \(error.errorDescription ?? "unknown")")
+                    phase = .result
+                } else {
+                    errorMessage = error.errorDescription
+                    phase = .error
+                }
             }
         } catch {
-            errorMessage = error.localizedDescription
-            phase = .error
+            // Checklist: 失敗時はテンプレ分解へフォールバック
+            if goal.category != nil {
+                fallbackToTemplate()
+                errorMessage = error.localizedDescription + "\nテンプレートで自動生成しました"
+                BillingEventLog.shared.log(.error,
+                    "AI failed, auto-fallback to template: \(error.localizedDescription)")
+                phase = .result
+            } else {
+                errorMessage = error.localizedDescription
+                phase = .error
+            }
         }
 
         isLoading = false
