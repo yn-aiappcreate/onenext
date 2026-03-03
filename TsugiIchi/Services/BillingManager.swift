@@ -44,7 +44,9 @@ final class BillingManager: ObservableObject {
         do {
             let storeProducts = try await Product.products(for: productIds)
             products = storeProducts.sorted { $0.price < $1.price }
+            BillingEventLog.shared.log(.purchase, "loadProducts count=\(products.count)")
         } catch {
+            BillingEventLog.shared.log(.error, "loadProducts error=\(error)")
             print("[BillingManager] Failed to load products: \(error)")
         }
     }
@@ -69,6 +71,7 @@ final class BillingManager: ObservableObject {
     func purchase(_ product: Product) async -> Transaction? {
         isPurchasing = true
         purchaseError = nil
+        BillingEventLog.shared.log(.purchase, "purchase start product=\(product.id)")
         defer { isPurchasing = false }
 
         do {
@@ -77,6 +80,7 @@ final class BillingManager: ObservableObject {
             case .success(let verification):
                 let transaction = extractTransaction(verification)
                 await transaction.finish()
+                BillingEventLog.shared.log(.purchase, "purchase success product=\(product.id)")
                 await EntitlementStore.shared.refresh()
                 // If consumable pack, credit the purchased amount
                 if product.id == BillingProduct.aiPack300.rawValue {
@@ -85,16 +89,20 @@ final class BillingManager: ObservableObject {
                 print("[BillingManager] purchase success: \(product.id)")
                 return transaction
             case .userCancelled:
+                BillingEventLog.shared.log(.purchase, "purchase cancelled product=\(product.id)")
                 print("[BillingManager] purchase cancelled by user")
                 return nil
             case .pending:
+                BillingEventLog.shared.log(.purchase, "purchase pending product=\(product.id)")
                 print("[BillingManager] purchase pending")
                 return nil
             @unknown default:
+                BillingEventLog.shared.log(.purchase, "purchase unknown result product=\(product.id)")
                 return nil
             }
         } catch {
             purchaseError = error.localizedDescription
+            BillingEventLog.shared.log(.error, "purchase error product=\(product.id) error=\(error)")
             print("[BillingManager] purchase error: \(error)")
             return nil
         }
@@ -103,11 +111,14 @@ final class BillingManager: ObservableObject {
     // MARK: - Restore
 
     func restorePurchases() async {
+        BillingEventLog.shared.log(.restore, "restorePurchases start")
         do {
             try await AppStore.sync()
+            BillingEventLog.shared.log(.restore, "AppStore.sync success")
             await EntitlementStore.shared.refresh()
         } catch {
             purchaseError = error.localizedDescription
+            BillingEventLog.shared.log(.error, "restorePurchases error=\(error)")
         }
     }
 
@@ -116,6 +127,7 @@ final class BillingManager: ObservableObject {
     private func listenForTransactions() async {
         for await result in Transaction.updates {
             let transaction = extractTransaction(result)
+            EntitlementStore.shared.markTransactionUpdateReceived(productId: transaction.productID)
             await transaction.finish()
             // If consumable pack, credit the purchased amount
             if transaction.productID == BillingProduct.aiPack300.rawValue {

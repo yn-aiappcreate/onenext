@@ -1,43 +1,107 @@
 #if DEBUG
-import SwiftUI
 import StoreKit
+import SwiftUI
+import UIKit
 
 /// Debug-only screen to diagnose billing state.
-/// Accessible from Settings > "課金デバッグ" (DEBUG builds only).
+/// Accessible from Settings > "Debug Billing" (DEBUG builds only).
 struct DebugBillingView: View {
 
     @ObservedObject private var entitlements = EntitlementStore.shared
     @ObservedObject private var credits = CreditsStore.shared
     @ObservedObject private var billing = BillingManager.shared
+    @ObservedObject private var eventLog = BillingEventLog.shared
 
     @State private var isRefreshing = false
-    @State private var proxyTestResult: String?
-    @State private var isTestingProxy = false
+
+    // StoreKit diagnostics
+    @State private var subscriptionStatusSummary: String = "(not loaded)"
+    @State private var currentEntitlementsSummary: String = "(not loaded)"
+    @State private var isLoadingDiagnostics = false
+
+    // Export UI
+    @State private var showCopiedAlert = false
 
     var body: some View {
         List {
             proStatusSection
+            storeKitDiagnosticsSection
             creditsSection
             proxySection
-            transactionsSection
+            eventLogSection
             actionsSection
         }
-        .navigationTitle("課金デバッグ")
+        .navigationTitle("Debug Billing")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // Best-effort preload
+            await billing.loadProducts()
+            await refreshStoreKitDiagnostics()
+        }
+        .alert("Copied", isPresented: $showCopiedAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Export text copied to clipboard")
+        }
     }
 
     // MARK: - Pro Status
 
     private var proStatusSection: some View {
         Section("Pro Status") {
-            row("EntitlementStore.isPro", value: entitlements.isPro ? "true" : "false",
+            row("EntitlementStore.isPro",
+                value: entitlements.isPro ? "true" : "false",
                 color: entitlements.isPro ? .green : .red)
             row("activeProductId", value: entitlements.activeProductId ?? "(nil)")
             row("proTransactionJWS",
                 value: entitlements.proTransactionJWS != nil
-                    ? "あり (\(entitlements.proTransactionJWS!.prefix(20))...)"
+                    ? "present (\(entitlements.proTransactionJWS!.prefix(20))...)"
                     : "(nil)",
                 color: entitlements.proTransactionJWS != nil ? .green : .orange)
+
+            row("lastEntitlementRefreshDate",
+                value: entitlements.lastEntitlementRefreshDate.map { formatDateTime($0) } ?? "(nil)")
+            row("lastTransactionUpdateDate",
+                value: entitlements.lastTransactionUpdateDate.map { formatDateTime($0) } ?? "(nil)")
+        }
+    }
+
+    // MARK: - StoreKit Diagnostics
+
+    private var storeKitDiagnosticsSection: some View {
+        Section("StoreKit Diagnostics") {
+            HStack {
+                Label("Refresh", systemImage: "arrow.clockwise")
+                Spacer()
+                if isLoadingDiagnostics {
+                    ProgressView().controlSize(.small)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                Task { await refreshStoreKitDiagnostics() }
+            }
+            .disabled(isLoadingDiagnostics)
+
+            LabeledContent("Products loaded", value: "\(billing.products.count)")
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("subscriptionStatus summary")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(subscriptionStatusSummary)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("currentEntitlements summary")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(currentEntitlementsSummary)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+            }
         }
     }
 
@@ -45,57 +109,73 @@ struct DebugBillingView: View {
 
     private var creditsSection: some View {
         Section("Credits") {
-            row("monthlyLimit", value: "\(credits.monthlyLimit) (\(entitlements.isPro ? "Pro" : "Free"))")
             row("monthlyUsed", value: "\(credits.monthlyUsedCount)")
+            row("monthlyLimit (current)", value: "\(credits.monthlyLimit) (\(entitlements.isPro ? "Pro" : "Free"))")
             row("monthlyRemaining", value: "\(credits.monthlyRemaining)")
             row("purchasedCredits", value: "\(credits.purchasedCredits)")
             row("totalRemaining", value: "\(credits.totalRemaining)",
                 color: credits.totalRemaining > 0 ? .primary : .red)
             row("canUseAI", value: credits.canUseAI ? "true" : "false")
+
             row("windowStart",
-                value: credits.windowStartDate.map { formatDate($0) } ?? "(未開始)")
-            if let lastProxy = credits.lastProxyRemaining {
-                row("lastProxyRemaining", value: "\(lastProxy)")
-            }
+                value: credits.windowStartDate.map { formatDateTime($0) } ?? "(not started)")
+
+            // Show both tiers explicitly (same windowStart/usedCount, different limits)
+            row("free tier", value: "start=\(credits.windowStartDate.map(formatDateTime) ?? \"(nil)\") used=\(credits.monthlyUsedCount) limit=\(CreditsStore.freeMonthlyLimit)")
+            row("pro tier", value: "start=\(credits.windowStartDate.map(formatDateTime) ?? \"(nil)\") used=\(credits.monthlyUsedCount) limit=\(CreditsStore.proMonthlyLimit)")
         }
     }
 
-    // MARK: - Proxy Verification
+    // MARK: - Proxy
 
     private var proxySection: some View {
-        Section("Proxy Verification") {
-            row("lastVerificationMethod",
-                value: credits.lastVerificationMethod ?? "(未取得)")
-            row("X-Client-Id", value: String(ClientId.current.prefix(8)) + "...")
-            row("X-Is-Pro sent", value: entitlements.isPro ? "true" : "false")
-            row("X-Signed-Transaction",
-                value: entitlements.proTransactionJWS != nil ? "送信あり" : "送信なし")
+        Section("Proxy") {
+            row("lastProxyRemaining", value: credits.lastProxyRemaining.map(String.init) ?? "(nil)")
+            row("lastProxySyncDate", value: credits.lastProxySyncDate.map { formatDateTime($0) } ?? "(nil)")
+            row("lastVerificationMethod", value: credits.lastVerificationMethod ?? "(nil)")
 
-            if let result = proxyTestResult {
-                Text(result)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            row("X-Client-Id", value: shortClientId(ClientId.current))
+            row("X-Is-Pro sent", value: entitlements.isPro ? "true" : "false")
+            row("X-Signed-Transaction", value: entitlements.proTransactionJWS != nil ? "present" : "nil")
         }
     }
 
-    // MARK: - Transactions
+    // MARK: - Event Log
 
-    private var transactionsSection: some View {
-        Section("StoreKit Transactions") {
-            Text("Xcodeコンソールで [EntitlementStore] / [BillingManager] ログを確認")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+    private var eventLogSection: some View {
+        Section("Billing Event Log (last 10)") {
+            HStack {
+                Button {
+                    UIPasteboard.general.string = eventLog.exportText()
+                    showCopiedAlert = true
+                } label: {
+                    Label("Copy export", systemImage: "doc.on.doc")
+                }
 
-            LabeledContent("Products loaded", value: "\(billing.products.count)")
-            ForEach(billing.products, id: \.id) { product in
-                HStack {
-                    Text(product.displayName)
-                        .font(.caption)
-                    Spacer()
-                    Text(product.displayPrice)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                Spacer()
+
+                Button {
+                    shareExportText(eventLog.exportText())
+                } label: {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+            }
+
+            Button(role: .destructive) {
+                eventLog.clear()
+            } label: {
+                Label("Clear log", systemImage: "trash")
+            }
+
+            if eventLog.entries.isEmpty {
+                Text("(no events)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(eventLog.entries.prefix(10))) { entry in
+                    Text("[\(entry.timeString)] [\(entry.category.rawValue)] \(entry.message)")
+                        .font(.system(.caption, design: .monospaced))
+                        .textSelection(.enabled)
                 }
             }
         }
@@ -116,29 +196,114 @@ struct DebugBillingView: View {
                     Label("Refresh Entitlements", systemImage: "arrow.clockwise")
                     if isRefreshing {
                         Spacer()
-                        ProgressView()
-                            .controlSize(.small)
+                        ProgressView().controlSize(.small)
                     }
                 }
             }
             .disabled(isRefreshing)
-
-            Button(role: .destructive) {
-                credits.resetAll()
-            } label: {
-                Label("Reset Credits (テスト用)", systemImage: "trash")
-            }
 
             Button {
                 Task {
                     isRefreshing = true
                     await billing.loadProducts()
                     await entitlements.refresh()
+                    await refreshStoreKitDiagnostics()
                     isRefreshing = false
                 }
             } label: {
-                Label("Reload Products + Entitlements", systemImage: "arrow.triangle.2.circlepath")
+                Label("Reload Products + Diagnostics", systemImage: "arrow.triangle.2.circlepath")
             }
+
+            Button(role: .destructive) {
+                credits.resetAll()
+                BillingEventLog.shared.log(.credit, "CreditsStore.resetAll invoked from DebugBillingView")
+            } label: {
+                Label("Reset Credits (testing)", systemImage: "trash")
+            }
+        }
+    }
+
+    // MARK: - StoreKit Diagnostics
+
+    private func refreshStoreKitDiagnostics() async {
+        isLoadingDiagnostics = true
+        defer { isLoadingDiagnostics = false }
+
+        // subscriptionStatus
+        var statusLines: [String] = []
+        let ids = [BillingProduct.proMonthly.rawValue, BillingProduct.proYearly.rawValue]
+
+        // Ensure products are loaded (best effort)
+        if billing.products.isEmpty {
+            await billing.loadProducts()
+        }
+
+        for id in ids {
+            guard let product = billing.products.first(where: { $0.id == id }) else {
+                statusLines.append("\(id): (product not loaded)")
+                continue
+            }
+            guard let subscriptionInfo = product.subscription else {
+                statusLines.append("\(id): (not a subscription product)")
+                continue
+            }
+
+            do {
+                let statuses = try await subscriptionInfo.status
+                if statuses.isEmpty {
+                    statusLines.append("\(id): (no status)")
+                } else {
+                    for status in statuses {
+                        let state = String(describing: status.state)
+                        var exp: String = "(nil)"
+                        if let txResult = status.transaction {
+                            switch txResult {
+                            case .verified(let tx):
+                                exp = tx.expirationDate.map { formatDateTime($0) } ?? "(nil)"
+                            case .unverified(let tx, _):
+                                exp = tx.expirationDate.map { formatDateTime($0) } ?? "(nil)"
+                            }
+                        }
+                        statusLines.append("\(id): state=\(state) exp=\(exp)")
+                    }
+                }
+            } catch {
+                statusLines.append("\(id): error=\(error)")
+            }
+        }
+        subscriptionStatusSummary = statusLines.isEmpty ? "(none)" : statusLines.joined(separator: "\n")
+
+        // currentEntitlements
+        var entitlementLines: [String] = []
+        for await result in StoreKit.Transaction.currentEntitlements {
+            switch result {
+            case .verified(let t):
+                let exp = t.expirationDate.map { formatDateTime($0) } ?? "(nil)"
+                let revoked = t.revocationDate != nil ? "revoked" : "active"
+                entitlementLines.append("verified: \(t.productID) exp=\(exp) \(revoked)")
+            case .unverified(let t, let err):
+                let exp = t.expirationDate.map { formatDateTime($0) } ?? "(nil)"
+                entitlementLines.append("unverified: \(t.productID) exp=\(exp) err=\(err)")
+            }
+        }
+        currentEntitlementsSummary = entitlementLines.isEmpty ? "(none)" : entitlementLines.joined(separator: "\n")
+
+        BillingEventLog.shared.log(.entitlement, "DebugBillingView refreshed StoreKit diagnostics")
+    }
+
+    // MARK: - Export
+
+    private func shareExportText(_ text: String) {
+        let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = rootVC.view
+                popover.sourceRect = CGRect(x: rootVC.view.bounds.midX, y: rootVC.view.bounds.midY, width: 0, height: 0)
+                popover.permittedArrowDirections = []
+            }
+            rootVC.present(activityVC, animated: true)
         }
     }
 
@@ -156,10 +321,15 @@ struct DebugBillingView: View {
         }
     }
 
-    private func formatDate(_ date: Date) -> String {
+    private func formatDateTime(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return formatter.string(from: date)
+    }
+
+    private func shortClientId(_ clientId: String) -> String {
+        if clientId.count <= 10 { return clientId }
+        return String(clientId.prefix(8)) + "..." + String(clientId.suffix(4))
     }
 }
 
