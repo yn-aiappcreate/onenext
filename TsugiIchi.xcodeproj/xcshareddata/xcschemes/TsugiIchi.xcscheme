@@ -28,6 +28,9 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <StoreKitConfigurationFileReference
+         identifier = "../../TsugiIchi/Configuration/TsugiIchi.storekit">
+      </StoreKitConfigurationFileReference>
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -50,7 +53,8 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES">
+      allowLocationSimulation = "YES"
+      storeKitConfigurationFileReference = "TsugiIchi/Configuration/TsugiIchi.storekit">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
