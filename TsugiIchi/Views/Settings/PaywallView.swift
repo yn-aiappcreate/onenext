@@ -100,6 +100,16 @@ struct PaywallView: View {
                                 PackProductButton {
                                     if let pack = billing.packProduct {
                                         Task { await billing.purchase(pack) }
+                                    } else {
+                                        // Product not loaded yet — reload and retry
+                                        Task {
+                                            await billing.loadProducts()
+                                            if let pack = billing.packProduct {
+                                                await billing.purchase(pack)
+                                            } else {
+                                                billing.setPurchaseError("AI追加パックの商品情報を取得できませんでした。しばらくしてからお試しください。")
+                                            }
+                                        }
                                     }
                                 }
                             } else if billing.products.isEmpty {

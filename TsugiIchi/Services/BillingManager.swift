@@ -294,6 +294,12 @@ final class BillingManager: ObservableObject {
         UserDefaults.standard.set(asInts, forKey: Keys.processedIds)
     }
 
+    /// Allow UI to set a purchase error message (e.g. when product is unavailable).
+    func setPurchaseError(_ message: String) {
+        purchaseError = message
+        BillingEventLog.shared.log(.error, "setPurchaseError: \(message)")
+    }
+
     /// Exposed for testing: check if a transaction ID has been processed.
     func isTransactionProcessed(_ id: UInt64) -> Bool {
         processedTransactionIds.contains(id)
