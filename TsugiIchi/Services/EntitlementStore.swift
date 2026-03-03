@@ -62,7 +62,9 @@ final class EntitlementStore: ObservableObject {
         if !foundPro { activeProductId = nil }
         lastEntitlementRefreshDate = Date()
         print("[EntitlementStore] refresh complete — isPro=\(foundPro)")
-        BillingEventLog.shared.log(.entitlement, "refresh isPro=\(foundPro) product=\(activeProductId ?? \"nil\") jws=\(jws != nil ? \"present\" : \"nil\")")
+        let productStr = activeProductId ?? "nil"
+        let jwsStr = jws != nil ? "present" : "nil"
+        BillingEventLog.shared.log(.entitlement, "refresh isPro=\(foundPro) product=\(productStr) jws=\(jwsStr)")
 
         if previousIsPro != foundPro {
             BillingEventLog.shared.log(.entitlement, "isPro changed \(previousIsPro) -> \(foundPro)")
