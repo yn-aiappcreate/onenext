@@ -367,9 +367,11 @@ struct AIStepSheet: View {
                 authToken: aiAuthToken
             )
             generatedSteps = result.steps
-            // Sync remaining from Proxy if available (M11+)
+            // Sync remaining + verificationMethod from Proxy (M11/M12)
             if let remaining = result.remaining {
-                credits.syncFromProxy(remaining: remaining)
+                credits.syncFromProxy(remaining: remaining, verificationMethod: result.verificationMethod)
+            } else if let method = result.verificationMethod {
+                credits.lastVerificationMethod = method
             }
             phase = .result
         } catch let error as AIServiceError {

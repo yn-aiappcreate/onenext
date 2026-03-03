@@ -4,8 +4,6 @@ import SwiftData
 struct SettingsTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
-    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
-
     @ObservedObject private var billing = BillingManager.shared
     @ObservedObject private var entitlements = EntitlementStore.shared
     @ObservedObject private var credits = CreditsStore.shared
@@ -51,6 +49,9 @@ struct SettingsTab: View {
                 calendarSection
                 exportSection
                 appInfoSection
+                #if DEBUG
+                debugSection
+                #endif
             }
             .navigationTitle("設定")
             .onChange(of: notificationWeekday) { _, _ in
@@ -71,7 +72,6 @@ struct SettingsTab: View {
             .task {
                 await billing.loadProducts()
                 await entitlements.refresh()
-                await subscriptionManager.updateSubscriptionStatus()
             }
         }
     }
@@ -282,6 +282,20 @@ struct SettingsTab: View {
             }
         }
     }
+
+    // MARK: - デバッグセクション
+
+    #if DEBUG
+    private var debugSection: some View {
+        Section("デバッグ") {
+            NavigationLink {
+                DebugBillingView()
+            } label: {
+                Label("課金デバッグ", systemImage: "ladybug")
+            }
+        }
+    }
+    #endif
 
     private func updateNotificationSchedule() {
         NotificationManager.scheduleWeeklyReview(

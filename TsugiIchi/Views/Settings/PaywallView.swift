@@ -64,7 +64,7 @@ struct PaywallView: View {
                             icon: "infinity",
                             color: .orange,
                             title: "無制限のGoal",
-                            subtitle: "Free版は\(SubscriptionManager.freeGoalLimit)件まで"
+                            subtitle: "Free版は\(EntitlementStore.freeGoalLimit)件まで"
                         )
                     }
                     .padding(.vertical, 8)

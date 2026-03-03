@@ -196,14 +196,14 @@ async function verifyAppleTransaction(jwsString, expectedBundleId) {
 /**
  * Check if the verified transaction payload represents an active Pro subscription.
  * @param {object} payload - Decoded Apple transaction payload
- * @param {string} proProductId - The expected Pro subscription product ID
+ * @param {string[]} proProductIds - Accepted Pro subscription product IDs (monthly + yearly)
  * @returns {{ isPro: boolean, expiresAt: number | null }}
  */
-function checkProStatus(payload, proProductId) {
+function checkProStatus(payload, proProductIds) {
   if (!payload) return { isPro: false, expiresAt: null };
 
-  // Check product ID matches
-  if (payload.productId !== proProductId) {
+  // Check product ID matches any accepted Pro product
+  if (!proProductIds.includes(payload.productId)) {
     return { isPro: false, expiresAt: null };
   }
 
@@ -228,13 +228,17 @@ function checkProStatus(payload, proProductId) {
  *
  * @param {Request} request
  * @param {string} clientId
- * @param {{ BUNDLE_ID?: string, PRO_PRODUCT_ID?: string }} env
+ * @param {{ BUNDLE_ID?: string, PRO_PRODUCT_IDS?: string, PRO_PRODUCT_ID?: string }} env
  * @returns {Promise<{ isPro: boolean, verificationMethod: string }>}
  */
 async function determineProStatus(request, clientId, env) {
   const signedTransaction = (request.headers.get("X-Signed-Transaction") || "").trim();
   const bundleId = env.BUNDLE_ID || "";
-  const proProductId = env.PRO_PRODUCT_ID || "com.ynlabs.tsugiichi.pro.monthly";
+  // Support comma-separated list of Pro product IDs (monthly + yearly)
+  const proProductIds = (env.PRO_PRODUCT_IDS || env.PRO_PRODUCT_ID || "com.ynlabs.tsugiichi.pro.monthly")
+    .split(",")
+    .map(id => id.trim())
+    .filter(Boolean);
 
   // 1. Try server-side JWS verification
   if (signedTransaction) {
@@ -244,7 +248,7 @@ async function determineProStatus(request, clientId, env) {
     );
 
     if (verified && payload) {
-      const status = checkProStatus(payload, proProductId);
+      const status = checkProStatus(payload, proProductIds);
 
       // Cache the result
       proVerifiedCache.set(clientId, {
@@ -717,7 +721,7 @@ function validateResponse(raw) {
 export default {
   /**
    * @param {Request} request
-   * @param {{ OPENAI_API_KEY: string, API_AUTH_TOKEN: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, CREDITS_KV: KVNamespace, BUNDLE_ID: string, PRO_PRODUCT_ID: string }} env
+   * @param {{ OPENAI_API_KEY: string, API_AUTH_TOKEN: string, OPENAI_MODEL: string, MAX_INPUT_LENGTH: string, CREDITS_KV: KVNamespace, BUNDLE_ID: string, PRO_PRODUCT_IDS: string }} env
    */
   async fetch(request, env) {
     // --- CORS preflight ---

@@ -16,8 +16,8 @@ RATE_LIMIT_PER_MINUTE = "10"
 # M12: Server-side Pro verification
 # アプリの Bundle ID（Apple JWS 検証で使用）
 BUNDLE_ID = "com.ynlabs.tsugiichi"
-# Pro サブスクリプションの Product ID
-PRO_PRODUCT_ID = "com.ynlabs.tsugiichi.pro.monthly"
+# Pro サブスクリプションの Product ID（カンマ区切りで複数対応）
+PRO_PRODUCT_IDS = "com.ynlabs.tsugiichi.pro.monthly,com.ynlabs.tsugiichi.pro.yearly"
 
 # KV Namespace for credit tracking (M11)
 # ⠀⠀wrangler kv:namespace create CREDITS_KV ⠀で作成後、id を以下に貼る
