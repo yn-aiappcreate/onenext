@@ -13,13 +13,25 @@ private enum RestoreAlertType: Identifiable {
     }
 }
 
+private enum PaywallAlertType: Identifiable {
+    case restore(RestoreAlertType)
+    case alreadyPro
+
+    var id: String {
+        switch self {
+        case .restore(let r): return "restore_\(r.id)"
+        case .alreadyPro: return "alreadyPro"
+        }
+    }
+}
+
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var billing = BillingManager.shared
     @ObservedObject private var entitlements = EntitlementStore.shared
     @ObservedObject private var credits = CreditsStore.shared
     @State private var isRestoring = false
-    @State private var restoreAlert: RestoreAlertType?
+    @State private var paywallAlert: PaywallAlertType?
 
     var body: some View {
         NavigationStack {
@@ -71,35 +83,26 @@ struct PaywallView: View {
 
                     // MARK: - Products
                     VStack(spacing: 12) {
-                        if entitlements.isPro {
-                            // Already subscribed - show current plan
-                            HStack {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .foregroundStyle(.green)
-                                Text(entitlements.activeProductId == BillingProduct.proYearly.rawValue
-                                     ? "Pro（年額）プラン利用中"
-                                     : "Pro（月額）プラン利用中")
-                                    .font(.headline)
-                                    .foregroundStyle(.green)
-                            }
-                            .padding()
+                            if entitlements.isPro {
+                                // Already subscribed - show current plan
+                                HStack {
+                                    Image(systemName: "checkmark.seal.fill")
+                                        .foregroundStyle(.green)
+                                    Text(entitlements.activeProductId == BillingProduct.proYearly.rawValue
+                                         ? "Pro（年額）プラン利用中"
+                                         : "Pro（月額）プラン利用中")
+                                        .font(.headline)
+                                        .foregroundStyle(.green)
+                                }
+                                .padding()
 
-                            // Show upgrade option: monthly → yearly only
-                            if entitlements.activeProductId == BillingProduct.proMonthly.rawValue {
-                                YearlyProductButton {
-                                    if let yearly = billing.proYearlyProduct {
-                                        Task { await billing.purchase(yearly) }
+                                // Pro users: AI pack only (monthly/yearly hidden)
+                                PackProductButton {
+                                    if let pack = billing.packProduct {
+                                        Task { await billing.purchase(pack) }
                                     }
                                 }
-                            }
-
-                            // AI pack always visible for Pro users
-                            PackProductButton {
-                                if let pack = billing.packProduct {
-                                    Task { await billing.purchase(pack) }
-                                }
-                            }
-                        } else if billing.products.isEmpty {
+                            } else if billing.products.isEmpty {
                             ProgressView("商品を読み込み中...")
                                 .padding()
                         } else {
@@ -134,11 +137,11 @@ struct PaywallView: View {
                             isRestoring = true
                             await billing.restorePurchases()
                             isRestoring = false
-                            if entitlements.isPro {
-                                restoreAlert = .success
-                            } else {
-                                restoreAlert = .noPurchase
-                            }
+                                            if entitlements.isPro {
+                                                paywallAlert = .restore(.success)
+                                            } else {
+                                                paywallAlert = .restore(.noPurchase)
+                                            }
                         }
                     } label: {
                         if isRestoring {
@@ -191,18 +194,29 @@ struct PaywallView: View {
                 }
             }
         }
-        .alert(item: $restoreAlert) { alertType in
+        .onChange(of: billing.showAlreadyProWarning) { newValue in
+            if newValue {
+                paywallAlert = .alreadyPro
+            }
+        }
+        .alert(item: $paywallAlert) { alertType in
             switch alertType {
-            case .success:
+            case .restore(.success):
                 return Alert(
                     title: Text("復元完了"),
                     message: Text("Proプランが復元されました。"),
                     dismissButton: .default(Text("OK"))
                 )
-            case .noPurchase:
+            case .restore(.noPurchase):
                 return Alert(
                     title: Text("購入が見つかりません"),
                     message: Text("このApple IDに有効なサブスクリプションが見つかりませんでした。"),
+                    dismissButton: .default(Text("OK"))
+                )
+            case .alreadyPro:
+                return Alert(
+                    title: Text("既にProプランに加入中"),
+                    message: Text("現在Proプランをご利用中のため、追加のサブスクリプション購入は不要です。プランの変更はAppleの設定アプリ → サブスクリプションから行えます。"),
                     dismissButton: .default(Text("OK"))
                 )
             }
