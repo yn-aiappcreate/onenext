@@ -15,28 +15,27 @@ enum SubscriptionProduct: String, CaseIterable {
 }
 
 /// Manages StoreKit 2 subscriptions for the Pro tier.
+/// NOTE: Transaction.updates listening is consolidated in BillingManager (single listener).
+/// This class delegates to EntitlementStore for Pro status.
 @MainActor
 final class SubscriptionManager: ObservableObject {
     static let shared = SubscriptionManager()
 
     @Published private(set) var products: [Product] = []
-    @Published private(set) var isProUser: Bool = false
     @Published private(set) var currentSubscription: Product.SubscriptionInfo.Status?
     @Published private(set) var purchaseError: String?
+
+    /// Pro status is derived from EntitlementStore (single source of truth).
+    var isProUser: Bool {
+        EntitlementStore.shared.isPro
+    }
 
     /// The group ID for the auto-renewable subscription group (set in App Store Connect).
     private let productIds = Set(SubscriptionProduct.allCases.map(\.rawValue))
 
-    private var updateTask: Task<Void, Never>?
-
     private init() {
-        updateTask = Task { [weak self] in
-            await self?.listenForTransactions()
-        }
-    }
-
-    deinit {
-        updateTask?.cancel()
+        // Transaction.updates listening is handled by BillingManager.
+        // No duplicate listener here.
     }
 
     // MARK: - Load Products
@@ -54,86 +53,35 @@ final class SubscriptionManager: ObservableObject {
 
     // MARK: - Purchase
 
+    /// Purchase delegates to BillingManager which handles verification + dedup.
     func purchase(_ product: Product) async {
         purchaseError = nil
         BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase start product=\(product.id)")
-        do {
-            let result = try await product.purchase()
-            switch result {
-            case .success(let verification):
-                let transaction = extractTransaction(verification)
-                await transaction.finish()
-                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase success product=\(product.id)")
-                await updateSubscriptionStatus()
-            case .userCancelled:
-                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase cancelled product=\(product.id)")
-                break
-            case .pending:
-                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase pending product=\(product.id)")
-                purchaseError = "購入が保留中です"
-            @unknown default:
-                BillingEventLog.shared.log(.purchase, "SubscriptionManager.purchase unknown result product=\(product.id)")
-                break
-            }
-        } catch {
-            BillingEventLog.shared.log(.error, "SubscriptionManager.purchase error product=\(product.id) error=\(error)")
-            purchaseError = "購入に失敗しました: \(error.localizedDescription)"
+        let transaction = await BillingManager.shared.purchase(product)
+        if let tx = transaction {
+            BillingEventLog.shared.log(.purchase,
+                "SubscriptionManager.purchase success product=\(product.id) txId=\(tx.id)")
+        } else if let error = BillingManager.shared.purchaseError {
+            purchaseError = error
         }
+        // purchaseError is nil for userCancelled (silent return)
     }
 
     // MARK: - Restore
 
+    /// Restore delegates to BillingManager.
     func restorePurchases() async {
         BillingEventLog.shared.log(.restore, "SubscriptionManager.restorePurchases start")
-        do {
-            try await AppStore.sync()
-            BillingEventLog.shared.log(.restore, "SubscriptionManager.AppStore.sync success")
-        } catch {
-            BillingEventLog.shared.log(.error, "SubscriptionManager.restorePurchases error=\(error)")
-        }
-        await updateSubscriptionStatus()
+        await BillingManager.shared.restorePurchases()
     }
 
     // MARK: - Status Check
 
+    /// Refresh subscription status from EntitlementStore (single source of truth).
     func updateSubscriptionStatus() async {
-        var hasActiveSubscription = false
-
-        for await result in StoreKit.Transaction.currentEntitlements {
-            let transaction = extractTransaction(result)
-            if productIds.contains(transaction.productID) {
-                hasActiveSubscription = true
-            }
-        }
-
-        isProUser = hasActiveSubscription
-        BillingEventLog.shared.log(.entitlement, "SubscriptionManager.updateSubscriptionStatus isProUser=\(hasActiveSubscription)")
-    }
-
-    // MARK: - Transaction Listener
-
-    private func listenForTransactions() async {
-        for await result in StoreKit.Transaction.updates {
-            let transaction = extractTransaction(result)
-            EntitlementStore.shared.markTransactionUpdateReceived(productId: transaction.productID)
-            await transaction.finish()
-            await updateSubscriptionStatus()
-        }
-    }
-
-    // MARK: - Verification
-
-    /// Extract the transaction from a VerificationResult.
-    /// Accepts both verified and unverified transactions (Sandbox may return unverified).
-    private func extractTransaction(_ result: VerificationResult<StoreKit.Transaction>) -> StoreKit.Transaction {
-        switch result {
-        case .verified(let transaction):
-            print("[SubscriptionManager] verified transaction: \(transaction.productID)")
-            return transaction
-        case .unverified(let transaction, let error):
-            print("[SubscriptionManager] unverified transaction: \(transaction.productID), error: \(error)")
-            return transaction
-        }
+        await EntitlementStore.shared.refresh()
+        BillingEventLog.shared.log(.entitlement,
+            "SubscriptionManager.updateSubscriptionStatus isProUser=\(isProUser)")
     }
 }
 
