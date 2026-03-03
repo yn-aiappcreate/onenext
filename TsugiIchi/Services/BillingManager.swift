@@ -38,20 +38,26 @@ final class BillingManager: ObservableObject {
     private let productIds = Set(BillingProduct.allCases.map(\.rawValue))
     private var updateTask: Task<Void, Never>?
 
-    /// Persisted set of transaction IDs that have already been processed.
+    /// Persisted ordered list of transaction IDs that have already been processed.
     /// Prevents double-crediting when both `purchase()` and `Transaction.updates` fire.
+    /// Uses an Array to maintain insertion order (newest last) for deterministic trimming.
     private var processedTransactionIds: Set<UInt64> {
         didSet { persistProcessedIds() }
     }
+    /// Ordered list backing the set — newest IDs are appended at the end.
+    private var processedTransactionIdsList: [UInt64] = []
 
     private enum Keys {
         static let processedIds = "billing_processedTransactionIds"
     }
 
     private init() {
-        // Load persisted processed transaction IDs
-        let stored = UserDefaults.standard.array(forKey: Keys.processedIds) as? [UInt64] ?? []
-        self.processedTransactionIds = Set(stored)
+        // Load persisted processed transaction IDs.
+        // UserDefaults stores UInt64 as NSNumber; read as [Int] then convert.
+        let storedInts = UserDefaults.standard.array(forKey: Keys.processedIds) as? [Int] ?? []
+        let storedUInts = storedInts.map { UInt64(bitPattern: Int64($0)) }
+        self.processedTransactionIdsList = storedUInts
+        self.processedTransactionIds = Set(storedUInts)
 
         updateTask = Task { [weak self] in
             await self?.listenForTransactions()
@@ -217,6 +223,7 @@ final class BillingManager: ObservableObject {
 
         // Mark as processed BEFORE granting to prevent race conditions
         processedTransactionIds.insert(transaction.id)
+        processedTransactionIdsList.append(transaction.id)
 
         // Grant entitlements/credits based on product type
         grantForTransaction(transaction, isVerified: isVerified, source: source)
@@ -257,9 +264,19 @@ final class BillingManager: ObservableObject {
     // MARK: - Persistence for processed transaction IDs
 
     private func persistProcessedIds() {
-        // Keep only the most recent 500 IDs to prevent unbounded growth
-        let trimmed = Array(processedTransactionIds.suffix(500))
-        UserDefaults.standard.set(trimmed, forKey: Keys.processedIds)
+        // Keep only the most recent 500 IDs to prevent unbounded growth.
+        // Use the ordered list (newest at end) so we keep the most recent IDs.
+        let trimmed: [UInt64]
+        if processedTransactionIdsList.count > 500 {
+            trimmed = Array(processedTransactionIdsList.suffix(500))
+            processedTransactionIdsList = trimmed
+            processedTransactionIds = Set(trimmed)
+        } else {
+            trimmed = processedTransactionIdsList
+        }
+        // Store as [Int] for reliable NSNumber bridging in UserDefaults
+        let asInts = trimmed.map { Int(bitPattern: UInt(truncatingIfNeeded: $0)) }
+        UserDefaults.standard.set(asInts, forKey: Keys.processedIds)
     }
 
     /// Exposed for testing: check if a transaction ID has been processed.
@@ -270,6 +287,7 @@ final class BillingManager: ObservableObject {
     /// Exposed for testing/debug: clear processed transaction IDs.
     func clearProcessedTransactionIds() {
         processedTransactionIds.removeAll()
+        processedTransactionIdsList.removeAll()
         BillingEventLog.shared.log(.purchase, "clearProcessedTransactionIds")
     }
 }
