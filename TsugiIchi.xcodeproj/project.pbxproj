@@ -48,6 +48,8 @@
 		2761F5B8F7E850938CC0B276 /* DateHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533E02662A195F7293225DA9 /* DateHelperTests.swift */; };
 		BIT0000100010001B0010001 /* BillingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIT0000200020002B0020002 /* BillingIntegrationTests.swift */; };
 		SKC0000100010001C0010001 /* TsugiIchi.storekit in Resources */ = {isa = PBXBuildFile; fileRef = SKC0000200020002C0020002 /* TsugiIchi.storekit */; };
+		BEL0000100010001D0010001 /* BillingEventLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEL0000200020002D0020002 /* BillingEventLog.swift */; };
+		DBV0000100010001E0010001 /* DebugBillingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBV0000200020002E0020002 /* DebugBillingView.swift */; };
 		W1D1A1B1C1D1E1F101112131 /* TsugiIchiWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */; };
 		W3D3A3B3C3D3E3F303132333 /* TsugiIchiWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -114,6 +116,8 @@
 		533E02662A195F7293225DA9 /* DateHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelperTests.swift; sourceTree = "<group>"; };
 		BIT0000200020002B0020002 /* BillingIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingIntegrationTests.swift; sourceTree = "<group>"; };
 		SKC0000200020002C0020002 /* TsugiIchi.storekit */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = TsugiIchi.storekit; sourceTree = "<group>"; };
+		BEL0000200020002D0020002 /* BillingEventLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingEventLog.swift; sourceTree = "<group>"; };
+		DBV0000200020002E0020002 /* DebugBillingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugBillingView.swift; sourceTree = "<group>"; };
 		W2D2A2B2C2D2E2F202122232 /* TsugiIchiWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TsugiIchiWidget.swift; sourceTree = "<group>"; };
 		WIPLIST0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		W4D4A4B4C4D4E4F404142434 /* TsugiIchiWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TsugiIchiWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -271,6 +275,7 @@
 			children = (
 				6056B073C5CB5BBABE7DC695 /* SettingsTab.swift */,
 				B55B138D76D95CEA99F876F2 /* PaywallView.swift */,
+				DBV0000200020002E0020002 /* DebugBillingView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -313,6 +318,7 @@
 				4408D9BE01285A6B93271FC4 /* CreditsStore.swift */,
 				600BF6E0B62F5CA5871E98E1 /* CalendarService.swift */,
 				C6132823D3985273826AE748 /* SubscriptionManager.swift */,
+				BEL0000200020002D0020002 /* BillingEventLog.swift */,
 				B59AE7B97DA15F3295D36BC7 /* WidgetDataProvider.swift */,
 			);
 			path = Services;
@@ -542,6 +548,8 @@
 				086CAA2B6F545B949679E1EE /* DashboardTab.swift in Sources */,
 				9D8C02EE60A4506DB681D1BA /* GoalShareSheet.swift in Sources */,
 				863C683B1397596180DF106F /* WidgetDataProvider.swift in Sources */,
+				BEL0000100010001D0010001 /* BillingEventLog.swift in Sources */,
+				DBV0000100010001E0010001 /* DebugBillingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
