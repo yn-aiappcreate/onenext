@@ -168,15 +168,29 @@ struct PaywallView: View {
                     .foregroundStyle(.secondary)
                     .disabled(isRestoring)
 
-                    // MARK: - Legal
-                    VStack(spacing: 4) {
-                        Text("サブスクリプションはApple IDに課金され、期間終了の24時間前までにキャンセルしない限り自動更新されます。")
-                        Link("利用規約", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
-                        Link("プライバシーポリシー", destination: URL(string: "https://www.apple.com/privacy/")!)
+                    // MARK: - Subscription details (Guideline 3.1.2)
+                    VStack(spacing: 8) {
+                        VStack(spacing: 4) {
+                            Text("サブスクリプションについて")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                            Text("ツギイチ Pro（月額）: ¥300/月（自動更新）")
+                            Text("ツギイチ Pro（年額）: ¥2,500/年（自動更新）")
+                        }
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+
+                        Text("サブスクリプションはApple IDに課金され、期間終了の24時間前までにキャンセルしない限り自動更新されます。購入確認時にiTunesアカウントに課金されます。サブスクリプションの管理・解約は購入後にAppleの設定アプリ → サブスクリプションから行えます。")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+
+                        HStack(spacing: 12) {
+                            Link("利用規約", destination: URL(string: "https://yn-aiappcreate.github.io/onenext/Docs/legal/terms-of-service.html")!)
+                            Link("プライバシーポリシー", destination: URL(string: "https://yn-aiappcreate.github.io/onenext/Docs/legal/privacy-policy.html")!)
+                        }
+                        .font(.caption2)
                     }
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
                     .padding(.horizontal)
                     .padding(.bottom, 20)
                 }
